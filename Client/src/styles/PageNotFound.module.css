@@ -1,0 +1,38 @@
+.pageNotFoundContainer {
+    text-align: center;
+    padding: 50px;
+    background-color: #f4f4f4;
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .pageNotFoundHeading {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .pageNotFoundMessage {
+    font-size: 1.8rem;
+    color: #666;
+    margin-top: 20px;
+  }
+  
+  .pageNotFoundButton {
+    margin-top: 30px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  
+  .pageNotFoundButton:hover {
+    background-color: #0056b3;
+  }
+  

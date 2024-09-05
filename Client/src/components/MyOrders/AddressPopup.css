@@ -1,0 +1,102 @@
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    width: 100%; 
+    max-width: 1200px; 
+    overflow-x: auto; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px; 
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 4px;
+    cursor: pointer;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #df6515;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 8px 5px;
+    margin: 0 4px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    background-color: #ca5454;
+    border-radius: 4px;
+}
+
+.pagination button.active {
+    background-color: #007bff;
+    color: rgb(203, 211, 94);
+    border-color: #007bff;
+}
+
+.pagination button:hover {
+    background-color: #ddd;
+}
+
+.popup-overlay .CloseButton{
+    background-color: rgb(6, 27, 221);
+    width: 5%;
+    float: right;
+}
+
+.spinner-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.8); 
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 10; 
+}
+
+.table-hidden {
+    display: none;
+}
+

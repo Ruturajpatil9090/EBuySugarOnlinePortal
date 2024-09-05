@@ -1,0 +1,54 @@
+/* Navbar.module.css */
+
+.navbar {
+    padding: 0 20px;
+}
+
+.logo {
+    max-width: 100%;
+    height: auto;
+}
+
+.navItems {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.navLink {
+    font-weight: bold;
+    font-size: 20px; 
+    margin: 0 10px;
+    color: #333; 
+    text-decoration: none;
+}
+
+.navLink:hover {
+    color: #007bff; 
+}
+
+.dropdownMenu {
+    right: 0;
+    width: 30px;
+}
+
+.iconsContainer {
+    display: flex;
+    align-items: center;
+}
+
+.dropdown {
+    margin-left: 15px;
+}
+
+.userInfo {
+    margin-left: 15px;
+}
+
+.textDanger {
+    color: red;
+}
+
+.currentTime {
+    margin-left: 15px;
+}

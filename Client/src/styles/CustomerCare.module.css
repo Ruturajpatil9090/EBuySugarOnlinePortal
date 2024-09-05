@@ -1,0 +1,32 @@
+.customerCare {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.heading {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.sectionHeading {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.faqItem {
+    margin-bottom: 10px;
+}
+
+.faqItemHeading {
+    margin: 0;
+}
+
+.faqItemText {
+    margin: 5px 0 0;
+}

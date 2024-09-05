@@ -1,0 +1,96 @@
+.container {
+    width: 95%;
+    margin: 0 auto;
+    margin-top: 100px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  
+  }
+
+  .container .TableCell {
+    font-weight: "bold";
+  }
+  
+.buttonsContainer{
+    width: 80%;
+    float: right;
+    padding: 10px;
+}
+
+.rateContainer  {
+  display: flex;
+  align-items: center;
+  float: right;
+}
+
+.rateContainer h5 {
+font-weight: bold;
+}
+
+.rateLabel {
+  margin-right: 10px;
+}
+
+.rateInput {
+  margin-right: 20px;
+ 
+}
+
+.savebutton{
+  width: 10px;
+  justify-content: center;
+
+}
+
+.buttonBack{
+  width: 10px;
+  justify-content: center;
+  margin-left: 50px;
+  margin-top: 50px;
+}
+
+
+.mySaleOrder {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  justify-content: flex-end; 
+}
+
+.mySaleOrder button {
+  width: 200px;
+  font-size: 16px; 
+  padding: 10px; 
+  border-radius: 8px; 
+  background-color: #0288d1; 
+  color: white;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+  transition: background-color 0.3s ease, transform 0.2s ease; 
+
+}
+
+.mySaleOrder button:hover {
+  background-color: #0277bd;
+  transform: translateY(-2px); 
+}
+
+.mySaleOrder button:active {
+  background-color: #01579b; 
+}
+
+.buttonsRow {
+  display: flex;
+  align-items: center;
+  gap: 2px; 
+  float: right;
+}
+
+.mySaleOrder, .buttonsContainer, .rateContainer {
+  display: flex;
+  align-items: center;
+}
+
+

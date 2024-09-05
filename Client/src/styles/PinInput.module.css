@@ -1,0 +1,39 @@
+/* src/styles/PinInput.module.css */
+
+.AppDiv {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  text-align: center;
+  background-color: #f9f9f9;
+  margin-top: 350px;
+  
+}
+
+.otpInput {
+  font-size: 40px; 
+  border: 2px solid #ccc; 
+  border-radius: 8px;
+  outline: none; 
+  transition: border-color 0.3s; 
+  margin-left: 20px;
+}
+
+.otpInput:focus {
+  border-color: #3182ce; 
+  box-shadow: 0 0 5px rgba(49, 130, 206, 0.5);
+}
+
+.verifyOtpButton{
+  width: 10%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #d9534f;
+  color: white;
+  font-size: 1em;
+  cursor: pointer;
+  margin-top: 30px;
+}

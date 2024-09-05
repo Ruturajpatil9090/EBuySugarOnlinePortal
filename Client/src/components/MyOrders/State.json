@@ -1,0 +1,146 @@
+[
+    {
+        "State_Code": 1,
+        "State_Name": "Jammu and Kashmir"
+    },
+    {
+        "State_Code": 2,
+        "State_Name": "Himachal Pradesh"
+    },
+    {
+        "State_Code": 3,
+        "State_Name": "Punjab"
+    },
+    {
+        "State_Code": 4,
+        "State_Name": "Chandigrah"
+    },
+    {
+        "State_Code": 5,
+        "State_Name": "Uttarakhand"
+    },
+    {
+        "State_Code": 6,
+        "State_Name": "Haryana"
+    },
+    {
+        "State_Code": 7,
+        "State_Name": "Delhi"
+    },
+    {
+        "State_Code": 8,
+        "State_Name": "Rajasthan"
+    },
+    {
+        "State_Code": 9,
+        "State_Name": "Uttar Pradesh"
+    },
+    {
+        "State_Code": 10,
+        "State_Name": " Bihar"
+    },
+    {
+        "State_Code": 11,
+        "State_Name": " Sikkim"
+    },
+    {
+        "State_Code": 12,
+        "State_Name": " Arunachal Pradesh"
+    },
+    {
+        "State_Code": 13,
+        "State_Name": " Nagaland"
+    },
+    {
+        "State_Code": 14,
+        "State_Name": " Manipur"
+    },
+    {
+        "State_Code": 15,
+        "State_Name": " Mizoram"
+    },
+    {
+        "State_Code": 16,
+        "State_Name": " Tripura"
+    },
+    {
+        "State_Code": 17,
+        "State_Name": " Meghalaya"
+    },
+    {
+        "State_Code": 18,
+        "State_Name": " Assam STATE"
+    },
+    {
+        "State_Code": 19,
+        "State_Name": " West Bengal"
+    },
+    {
+        "State_Code": 20,
+        "State_Name": " Jharkhand"
+    },
+    {
+        "State_Code": 21,
+        "State_Name": "Odisha"
+    },
+    {
+        "State_Code": 22,
+        "State_Name": " Chhattisgarh"
+    },
+    {
+        "State_Code": 23,
+        "State_Name": " Madhya Pradesh"
+    },
+    {
+        "State_Code": 24,
+        "State_Name": " Gujarat"
+    },
+    {
+        "State_Code": 25,
+        "State_Name": " Daman and Diu "
+    },
+    {
+        "State_Code": 26,
+        "State_Name": "Dadra and Nagar Haveli"
+    },
+    {
+        "State_Code": 27,
+        "State_Name": " Maharashtra"
+    },
+    {
+        "State_Code": 29,
+        "State_Name": " Karnataka"
+    },
+    {
+        "State_Code": 30,
+        "State_Name": " Goa"
+    },
+    {
+        "State_Code": 31,
+        "State_Name": " Lakshadweep"
+    },
+    {
+        "State_Code": 32,
+        "State_Name": " Kerala"
+    },
+    {
+        "State_Code": 33,
+        "State_Name": " Tamil Nadu"
+    },
+    {
+        "State_Code": 34,
+        "State_Name": " Puducherry"
+    },
+    {
+        "State_Code": 35,
+        "State_Name": "Andaman and Nicobar"
+    },
+    {
+        "State_Code": 36,
+        "State_Name": "Telangana"
+    },
+    {
+        "State_Code": 37,
+        "State_Name": "Andhra pradesh"
+    }
+]
