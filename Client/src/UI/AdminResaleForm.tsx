@@ -166,7 +166,6 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
         },
       })
       .then(response => {
-        console.log("Form data published successfully:", response);
         onClose();
       })
       .catch(error => {

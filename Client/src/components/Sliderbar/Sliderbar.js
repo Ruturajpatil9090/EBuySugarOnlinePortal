@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import logo from "../../Assets/logo.svg";
 import Home from "../../Assets/home-solid.svg";
 import Team from "../../Assets/social.svg";
 import Calender from "../../Assets/draft.svg";
@@ -7,6 +6,7 @@ import Projects from "../../Assets/starred.svg";
 import Documents from "../../Assets/AddToCart.svg";
 import PowerOff from "../../Assets/power-off-solid.svg";
 import Companylogo from "../../Assets/jklogo.png";
+import TrackOrder from "../../Assets/TrackOrder.svg"
 import styled from "styled-components";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -80,11 +80,11 @@ const SidebarContainer = styled.div`
 
 const Logo = styled.div`
   width: 2rem;
-  border-radius: 50%;
 
   img {
     width: 100%;
     height: auto;
+    border-radius: 50%;
   }
 `;
 
@@ -281,10 +281,10 @@ const Sidebar = () => {
           <Item
             onClick={() => setClick(false)}
             activeClassName="active"
-            to="/projects"
+            to="/ordertracking"
           >
-            <img src={Projects} alt="Projects" />
-            <Text clicked={click}>Settings</Text>
+            <img src={TrackOrder} alt="TrackOrder" />
+            <Text clicked={click}>Track Order</Text>
           </Item>
         </SlickBar>
 

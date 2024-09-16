@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination, Paper } from '@mui/material';
-import styles from '../../styles/Myorder.module.css';
-import OrderModal from './OrderModal';
+import {
+    Button,
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    TablePagination,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+} from '@mui/material';
+import LinearStepper from './OrderTrackingProgressBar';
 import io from 'socket.io-client';
+import styles from '../../styles/Myorder.module.css';
 import MotionHoc from "../../Pages/MotionHoc";
 
-
 const apiKey = process.env.REACT_APP_API_KEY;
-
 const socketURL = 'http://localhost:8080';
 
 interface Order {
@@ -33,11 +44,29 @@ const MyOrderComponents: React.FC = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const user_id = sessionStorage.getItem('user_id')
+    const user_id = sessionStorage.getItem('user_id');
+
+    const titleStyle = {
+        textAlign: 'center' as const,
+        color: '#802086',
+        fontSize: '25px',
+    };
+
+    const buttonStyle = {
+        backgroundColor: '#3f51b5',
+        color: '#fff',
+        padding: '8px 16px',
+        border: 'none',
+        borderRadius: '25px',
+        cursor: 'pointer' as const,
+        fontSize: '16px',
+        margin: '8px',
+        width: "30%"
+    };
+
 
     useEffect(() => {
         fetchOrders();
-       
     }, []);
 
     const fetchOrders = async () => {
@@ -56,13 +85,12 @@ const MyOrderComponents: React.FC = () => {
             console.log('Connected to socket server');
         });
 
-        socket.on('pending_do_saved', (newOrder: Order | Order[]) => {
-            fetchOrders()
+        socket.on('pending_do_saved', () => {
+            fetchOrders();
         });
 
         socket.on('disconnect', () => {
             console.log('Disconnected from socket server');
-
         });
 
         return () => {
@@ -131,17 +159,24 @@ const MyOrderComponents: React.FC = () => {
                                         <TableCell>{order.Lifted_qntl} qntl</TableCell>
                                         <TableCell>{order.Pending_qntl} qntl</TableCell>
                                         <TableCell>
-                                            <Button variant="contained" color="primary" onClick={() => handleOpenModal(order)}>
-                                                Place Order
+                                            <Button onClick={() => handleOpenModal(order)} style={{
+                                                backgroundColor: '#008080',
+                                                color: '#fff',
+                                                borderRadius: '10px',
+                                                textTransform: 'none',
+                                                fontSize: '16px',
+                                                boxShadow: '0px 4px 6px rgba(0,0,0,0.1)',
+                                            }}>
+                                                Track Order
                                             </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <h1 style={{ padding: '20px', justifyContent: 'center' }}>
-                                        No orders found!..
-                                    </h1>
+                                    <TableCell colSpan={14} align="center">
+                                        <h1>No orders found!..</h1>
+                                    </TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
@@ -156,17 +191,23 @@ const MyOrderComponents: React.FC = () => {
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                 </TableContainer>
-                {selectedOrder && (
-                    <OrderModal
-                        open={isModalOpen}
-                        onClose={handleCloseModal}
-                        order={selectedOrder}
-                    />
-                )}
             </div>
+
+            {/* Modal to show the LinearStepper with order id */}
+            <Dialog open={isModalOpen} onClose={handleCloseModal} fullWidth maxWidth="md">
+                <DialogTitle style={titleStyle}>Order Tracking</DialogTitle>
+                <DialogContent>
+                    {selectedOrder && <LinearStepper orderid={selectedOrder.orderid} />}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseModal} style={buttonStyle} >
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
-}
+};
 
 const MyOrder = MotionHoc(MyOrderComponents);
 export default MyOrder;

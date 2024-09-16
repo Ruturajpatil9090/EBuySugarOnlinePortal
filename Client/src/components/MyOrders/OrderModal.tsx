@@ -164,7 +164,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
 
         try {
             const response = await axios.post(API_URL, data);
-            console.log('API Response:', response.data);
             showSuccessToast(`Place Order Successfully!`);
             onClose();
         } catch (error) {
@@ -328,7 +327,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
         } catch (error) {
             console.error('Error fetching data from API:', error);
         } finally {
-            // Hide loader
             setIsLoading(false);
         }
     };
@@ -544,7 +542,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
                             mb: 1,
                         }}
                     >
-                        ☼☼☼ Order Details ☼☼☼
+                        Order Details
                     </Typography>
                     <br></br>
                     <br></br>

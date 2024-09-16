@@ -1,4 +1,3 @@
-// PrivateRoute.tsx
 import React, { FC } from 'react';
 import { Navigate } from 'react-router-dom';
 

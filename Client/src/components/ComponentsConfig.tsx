@@ -7,7 +7,8 @@ import MyOrder from '../components/MyOrders/MyOrders';
 import CustomerCare from './CustomerCare/CustomerCare';
 import ETender from "../components/ETender/ETender";
 import MyReports from './MyReports/MyReports';
-
+import EBuySettingsPage from './EBuySettings/EBuySettings';
+import OrderTracking from "../components/OrderTracking/OrderTracking"
 
 const routes = [
   {
@@ -37,6 +38,14 @@ const routes = [
   {
     path: '/myreports',
     element: MyReports
+  },
+  {
+    path: '/settings',
+    element: EBuySettingsPage
+  },
+  {
+    path: '/ordertracking',
+    element: OrderTracking
   }
 ];
 

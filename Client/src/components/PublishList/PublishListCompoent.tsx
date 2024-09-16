@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import {useNavigate } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -23,7 +23,6 @@ import AdminResaleForm from "../../UI/AdminResaleForm";
 import Testimonials from "../Testinomials/Testimonials"
 import Footer from "../../Layout/Footer";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-
 
 interface RowData {
   Tender_No: number;
@@ -60,7 +59,6 @@ const apiKey = process.env.REACT_APP_API_KEY;
 const socketURL = 'http://localhost:8080';
 
 const PublishedListComponent: React.FC = () => {
-  const location = useLocation();
   const [data, setData] = useState<RowData[]>([]);
   const [isTradingStopped, setIsTradingStopped] = useState<{ [key: number]: boolean }>({});
   const [isTradingStoppedForAll, setIsTradingStoppedForAll] = useState(false);
@@ -68,8 +66,6 @@ const PublishedListComponent: React.FC = () => {
   const [isPopupOpenAdmin, setIsPopupOpenAdmin] = useState(false);
   const [selectedRow, setSelectedRow] = useState<RowData | null>(null);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
-  const [isResaleFormOpen, setIsResaleFormOpen] = useState(false);
-  const userType = sessionStorage.getItem('user_type');
   const isAdmin = sessionStorage.getItem("isAdmin")
   const menuAddResell = sessionStorage.getItem('menu_add_resell');
   const [rateInput, setRateInput] = useState<string>('');
@@ -99,18 +95,15 @@ const PublishedListComponent: React.FC = () => {
   useEffect(() => {
     const socket = io(socketURL);
     socket.on('connect', () => {
-      console.log('Connected to socket server');
     });
 
     socket.on('publishList', (newTender: RowData[]) => {
       setData((prevData) => [...prevData, ...newTender]);
       fetchData();
-      console.log('publishList');
     });
 
     socket.on('deletePublishTender', (deletePublishTender: { publishid: number }) => {
       setData((prevData) => prevData.filter(tender => tender.publishid !== deletePublishTender.publishid));
-      console.log('deletePublishTender');
     });
 
     socket.on('update_data', (update_data: RowData) => {
@@ -121,13 +114,11 @@ const PublishedListComponent: React.FC = () => {
 
       );
       fetchData();
-      console.log('update_data');
     });
 
     socket.on('update_display_rate', (updatedEntries: RowData[]) => {
       setData(updatedEntries);
       fetchData();
-      console.log('update_display_rate');
     });
 
     socket.on('newOrder', (newOrder) => {
@@ -135,8 +126,6 @@ const PublishedListComponent: React.FC = () => {
     });
 
     socket.on('disconnect', () => {
-      console.log('Disconnected from socket server');
-
     });
 
     return () => {
@@ -422,7 +411,6 @@ const PublishedListComponent: React.FC = () => {
                         size="small"
                         style={{ marginLeft: '-40px' }}
                         onClick={() => handleBuyClick(row)}
-
                       >
                         Buy
                       </Button>

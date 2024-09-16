@@ -6,6 +6,7 @@ import { BellIcon } from '@chakra-ui/icons';
 import Avatar from '@mui/material/Avatar';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
+import Companylogo from "../../Assets/jklogo.png";
 
 const NavbarComponent: React.FC = () => {
   const userId = sessionStorage.getItem('user_id');
@@ -41,7 +42,7 @@ const NavbarComponent: React.FC = () => {
   };
 
   const handleDropdownToggle = () => {
-    setShowDropdown(prev => !prev); // Toggle dropdown visibility
+    setShowDropdown(prev => !prev); 
   };
 
   useEffect(() => {
@@ -74,8 +75,8 @@ const NavbarComponent: React.FC = () => {
       <Navbar.Brand>
         <img
           src={logo}
-          width="100%"
-          height="80px"
+          width="60%"
+          height="60px"
           className={styles.logo}
           alt="Logo"
         />
@@ -96,7 +97,7 @@ const NavbarComponent: React.FC = () => {
             <Link to="/myreports" className={styles.navLink}>My Report</Link>
           </Nav.Item>
           <Nav.Item>
-            <Link to="/tenderreport" className={styles.navLink}>Tender Report</Link>
+            <Link to="/ordertracking" className={styles.navLink}>Track Order</Link>
           </Nav.Item>
           <Nav.Item>
             <Link to="/CustomerCare" className={styles.navLink} onClick={handleCustomercare}>Customer Care: 9881999101</Link>

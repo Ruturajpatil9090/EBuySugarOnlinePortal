@@ -8,7 +8,6 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import styles from "../../styles/DashBoard.module.css";
 import Button from "@mui/material/Button";
-import ActivListDashBoard from "./ActiveListDashBoard";
 import TablePagination from "@mui/material/TablePagination";
 import axios from "axios";
 import TextField from "@mui/material/TextField";
@@ -16,7 +15,6 @@ import { useNavigate } from "react-router-dom";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ToastComponent, {
   showSuccessToast,
-  showErrorToast,
 } from "../../UI/ToastComponent";
 const apiKey = process.env.REACT_APP_API_KEY;
 const socketURL = 'http://localhost:8080';
@@ -186,7 +184,6 @@ const TenderPublishComponent: React.FC = () => {
   return (
     <>
       <ToastComponent />
-      {/* <ActivListDashBoard /> */}
       <div className={styles.buttonContainer}>
 
         {/* <TextField

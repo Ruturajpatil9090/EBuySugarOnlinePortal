@@ -6,8 +6,11 @@
     border: 1px solid #ccc;
     border-radius: 10px;
     text-align: center;
-    background-color: #f9f9f9;
     margin-top: 300px;
+    background-image: url("../Assets/background\ image.webp");
+    background-size: cover;
+    background-position: center; 
+    background-repeat: no-repeat; 
 }
 
 .formGroup {

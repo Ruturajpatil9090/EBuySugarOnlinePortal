@@ -9,7 +9,6 @@ const TenderCompoent: React.FC<TenderProps> = (props) => {
     return (
         <div>
             <h1>eTender Component</h1>
-
         </div>
     );
 };

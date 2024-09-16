@@ -1,3 +1,4 @@
+import React,{useEffect} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
@@ -5,8 +6,8 @@ import RouterConfig from "./Pages/RouterConfig";
 import ComponentsConfig from "./components/ComponentsConfig";
 import Navbar from './Layout/Navbar';
 import Sidebar from './components/Sliderbar/Sliderbar';
-
 import styled from "styled-components";
+import GlobalEventHandler from "./AdminRoleAuthentication/GlobalHideRightClickButton"
 
 const Pages = styled.div`
   width: 100vw;
@@ -39,12 +40,13 @@ function AppContent() {
 
     return (
         <>
-            {/* Conditionally render Navbar based on current pathname */}
-            {ComponentsConfig.find(route => route.path === pathname) && pathname !== "/myorders" && pathname !== "/eTender" 
-            && pathname !== "/myreports" && <Navbar />}
-            {pathname === "/myorders"  && <Sidebar />}
-            {pathname === "/eTender"  && <Sidebar />}
-            {pathname === "/myreports"  && <Sidebar />}
+         <GlobalEventHandler />
+            {ComponentsConfig.find(route => route.path === pathname) && pathname !== "/myorders" && pathname !== "/eTender"
+                && pathname !== "/myreports" && <Navbar />}
+            {pathname === "/myorders" && <Sidebar />}
+            {pathname === "/eTender" && <Sidebar />}
+            {pathname === "/myreports" && <Sidebar />}
+            {pathname === "/ordertracking" && <Sidebar />}
             <Routes>
                 {RouterConfig.map((route, index) => (
                     <Route key={index} path={route.path} element={<route.element />} />
