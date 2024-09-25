@@ -6,7 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import SystemHelpMaster from "../Helper/HelpCompoent/SystemMasterHelp";
+import SystemHelpMaster from "../Helper/HelpComponent/SystemMasterHelp";
 
 const userId = sessionStorage.getItem("user_id");
 const ac_code = sessionStorage.getItem("ac_code");
@@ -76,8 +76,8 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
       .get(`${apiKey}/companieslist`)
       .then((response) => {
         const fetchedCompanies = response.data.map(
-          (company: { user_id: number; company_name: string, accoid: number }) => ({
-            id: company.user_id,
+          (company: { user_id: number; company_name: string, accoid: number,ac_code:number  }) => ({
+            id: company.ac_code,
             name: company.company_name,
             accoid: company.accoid
           })

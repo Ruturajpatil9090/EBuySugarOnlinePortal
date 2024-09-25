@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Typography, Box, Grid, CircularProgress, IconButton } from '@mui/material';
 import axios from 'axios';
 import { Alert } from 'react-bootstrap';
-import { HashLoader } from "react-spinners";
+// import { HashLoader } from "react-spinners";
 import CloseIcon from '@mui/icons-material/Close';
 
 const apiKey = process.env.REACT_APP_API_KEY;
-const user_id = sessionStorage.getItem('user_id');
-const accoid = sessionStorage.getItem('accoid');
-const ac_code = sessionStorage.getItem('ac_code');
+
 
 interface BuyPopupProps {
   open: boolean;
@@ -38,10 +36,14 @@ const BuyPopup: React.FC<BuyPopupProps> = ({ open, onClose, millName, grade, sea
   const [alertVariant, setAlertVariant] = useState<'success' | 'danger'>('success');
   const [isLoading, setIsLoading] = useState(false);
 
+  const user_id = sessionStorage.getItem('user_id');
+  const accoid = sessionStorage.getItem('accoid');
+  const ac_code = sessionStorage.getItem('ac_code');
+
   const handlePlaceOrder = () => {
     if (buyQty > 0 && buyQty % 5 === 0) {
       setLoading(true);
-      setIsLoading(true)
+      // setIsLoading(true)
 
       const orderData = {
         Order_Date: new Date().toISOString().split('T')[0],
@@ -70,21 +72,29 @@ const BuyPopup: React.FC<BuyPopupProps> = ({ open, onClose, millName, grade, sea
 
           onPlaceOrder(buyQty, publishid, tenderid);
           setAlertMessage('Order placed successfully!');
-          setTimeout(() => {
-            onClose();
-            setAlertMessage(null);
-          }, 2000);
+          // setIsLoading(false);
+          onClose();
+          // setTimeout(() => {
+          //   onClose();
+          //   setAlertMessage(null);
+          // }, 2000);
 
         })
         .catch(error => {
-          setLoading(false);
           console.error('Error placing order:', error);
           setAlertMessage('Failed to place order. Please try again later.');
+          // setIsLoading(false);
+          onClose();
+          // setTimeout(() => {
+          //   onClose();
+          //   setAlertMessage(null);
+          // }, 3000);
+        
           setAlertVariant('danger');
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        // .finally(() => {
+        //   setLoading(false);
+        // });
     } else {
       alert("Please enter a valid quantity Multiple of 5");
     }
@@ -160,7 +170,7 @@ const BuyPopup: React.FC<BuyPopupProps> = ({ open, onClose, millName, grade, sea
                     zIndex: 1300,
                   }}
                 >
-                  <HashLoader color="#007bff" loading={isLoading} size={80} />
+                  {/* <HashLoader color="#007bff" loading={isLoading} size={80} /> */}
                 </Box>
               )}
 
@@ -195,7 +205,7 @@ const BuyPopup: React.FC<BuyPopupProps> = ({ open, onClose, millName, grade, sea
             Cancel
           </Button>
           <Button onClick={handlePlaceOrder} color="primary" variant="contained" disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : "Place Order"}
+            Place Order
           </Button>
         </DialogActions>
       </Dialog>

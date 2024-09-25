@@ -120,17 +120,23 @@ const BuyPopup: React.FC<BuyPopupProps> = ({
         .then(response => {
           onPlaceOrder(buyQty, publishid, tenderid);
           setAlertMessage('Order placed successfully!');
-          setTimeout(() => {
-            onClose();
-            setAlertMessage(null);
-          }, 2000);
+          setIsLoading(false);
+          onClose();
+          // setTimeout(() => {
+          //   onClose();
+          //   setAlertMessage(null);
+          // }, 2000);
 
         })
         .catch(error => {
-          setIsLoading(false);
           console.error('Error placing order:', error);
           setAlertMessage('Failed to place order. Please try again later.');
-          alert('Failed to place order. Please try again later.');
+          setIsLoading(false);
+          setTimeout(() => {
+            onClose();
+            setAlertMessage(null);
+          }, 3000);
+          setAlertVariant('danger');
         })
         .finally(() => {
           setIsLoading(false);

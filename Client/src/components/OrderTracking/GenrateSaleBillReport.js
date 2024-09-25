@@ -7,7 +7,7 @@ import "jspdf-autotable";
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
-const SaleBillReport = () => {
+const SaleBillReport = ({sbNo}) => {
   const [invoiceData, setInvoiceData] = useState([]);
 
   const numberToWords = (num) => {
@@ -60,7 +60,7 @@ const SaleBillReport = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`${apiKey}/generating_saleBill_report?Company_Code=1&Year_Code=4&doc_no=10`);
+      const response = await fetch(`${apiKey}/generating_saleBill_report?Company_Code=1&Year_Code=4&doc_no=${sbNo}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -101,7 +101,7 @@ const SaleBillReport = () => {
       pdf.line(10, 45, 200, 45);
 
       const allData = data[0];
-      const totalAmount = parseFloat(allData.TCS_Net_Payable);
+      const totalAmount = parseFloat(allData.item_Amount);
       const totalAmountWords = numberToWords(totalAmount);
       const tableData = [
         ["Reverse Charge", "No"],
@@ -275,7 +275,7 @@ const SaleBillReport = () => {
 
   return (
     <div id="pdf-content" className="centered-container" style={{width:"30%"}}>
-      <button onClick={fetchData}>Print</button>
+      <button onClick={fetchData}>Sale Bill</button>
     </div>
   );
 };

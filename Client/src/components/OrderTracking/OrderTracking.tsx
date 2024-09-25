@@ -119,7 +119,7 @@ const MyOrderComponents: React.FC = () => {
 
     return (
         <>
-            <h2>My Orders</h2>
+            <h2>Track Order</h2>
             <div className={styles.container}>
                 <TableContainer>
                     <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">

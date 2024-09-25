@@ -32,7 +32,7 @@ def userlist():
     try:
         # Define the raw SQL query using text()
         sql_query = text("SELECT user_id, company_name, Mill_short_name, accoid, ac_code "
-                         "FROM eBuySugar_UserCreation WHERE user_type = 2 AND accoid IS NOT NULL")
+                         "FROM eBuySugar_UserCreation WHERE user_type = 1 AND accoid IS NOT NULL")
 
         # Execute the query
         result = db.session.execute(sql_query).fetchall()

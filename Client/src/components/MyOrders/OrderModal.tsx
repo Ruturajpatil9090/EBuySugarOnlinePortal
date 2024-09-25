@@ -48,6 +48,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
     const [adjustedQty, setAdjustedQty] = useState('');
     const [truckNumber, setTruckNumber] = useState('');
     const [paymentDetail, setPaymentDetail] = useState('');
+    const [paidAmount, setPaidAmount] = useState('');
     const [newParty, setNewParty] = useState('N');
     const [billTOCity, setBillToCity] = useState('');
     const [shipToCity, setShipToCity] = useState('');
@@ -63,6 +64,9 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
     const [stateCodeOnlinePortal, setStateCodeOnlinePortal] = useState('');
     const [panNumberOnlinePortal, setPanNumberOnlinePortal] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const [billToAccoid, setBillToAccoid] = useState('');
+    const [shipToAccoid, setShipToAccoid] = useState('');
 
     interface Address {
         addr: {
@@ -135,7 +139,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
     const handleSubmit = async () => {
         if (!liftedQntl || !gstNumber || !shipToGstNumber ||
             !billToName || !billToAddress || !billToState || !billToPincode ||
-            !shipToName || !shipToAddress || !shipToState || !shipToPincode) {
+            !shipToName || !shipToAddress || !shipToState || !shipToPincode || !paidAmount) {
             showErrorToast('Please fill required feilds!');
             return;
         }
@@ -159,7 +163,10 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
             orderid: order.orderid,
             truck_no: truckNumber,
             new_party: newParty,
-            tenderdetailid: order.tenderdetailid
+            tenderdetailid: order.tenderdetailid,
+            bill_to_accoid: Number(billToAccoid),
+            ship_to_accoid: Number(shipToAccoid),
+            paid_amount:paidAmount
         };
 
         try {
@@ -290,11 +297,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
                     const accountMasterData = await accountMasterResponse.json();
 
                     const AccountMaster = accountMasterData.AccountMaster;
-
+                    console.log("293++++++=Acccountmaster",AccountMaster)
                     let AcCodeNew;
+                    let Accoid;
 
                     if (AccountMaster && Object.keys(AccountMaster).length > 0) {
                         AcCodeNew = AccountMaster.Ac_Code;
+                        Accoid = AccountMaster.accoid
+
                     } else {
                         console.error('AccountMaster data is not available or is empty:', AccountMaster);
                     }
@@ -308,6 +318,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
                         setShipToPincode(pincode);
                         setShipToCity(city);
                         setShipToAcCode(AcCodeNew);
+                        setShipToAccoid(Accoid);
                         setNewParty('Y');
                     } else {
 
@@ -317,6 +328,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
                         setBillToPincode(pincode);
                         setBillToCity(city);
                         setBillToAcCode(AcCodeNew);
+                        setBillToAccoid(Accoid);
                         setNewParty('Y');
                     }
                 }
@@ -402,11 +414,15 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
         const accountMasterData = await accountMasterResponse.json();
 
         const AccountMaster = accountMasterData.AccountMaster;
+        console.log("405++++++=Acccountmaster",AccountMaster)
 
         let AcCodeNew;
+        let Accoid;
 
         if (AccountMaster && Object.keys(AccountMaster).length > 0) {
             AcCodeNew = AccountMaster.Ac_Code;
+            Accoid = AccountMaster.accoid
+
         } else {
             console.error('AccountMaster data is not available or is empty:', AccountMaster);
         }
@@ -418,6 +434,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
             setShipToPincode(pincode);
             setShipToCity(city);
             setShipToAcCode(AcCodeNew);
+            setShipToAccoid(Accoid);
             setNewParty('Y');
         } else {
             setBillToName(tradersname);
@@ -425,6 +442,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
             setBillToState(state);
             setBillToPincode(pincode);
             setBillToAcCode(AcCodeNew);
+            setBillToAccoid(Accoid);
             setBillToCity(city);
             setNewParty('Y');
         }
@@ -450,8 +468,11 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
             const response = await axios.get(`${APIURL}/gstaccountinfo?GST_No=${gstNumber}`);
             const data = response.data[0];
 
+            console.log("data gst bill acoid",data)
+
             if (data) {
                 setBillToAcCode(data.Ac_Code);
+                setBillToAccoid(data.accoid)
                 setBillToName(data.Ac_Name_E);
                 setBillToAddress(data.Address_E);
                 setBillToState(data.state);
@@ -481,6 +502,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
             const data = response.data[0];
             if (data) {
                 setShipToAcCode(data.Ac_Code);
+                setShipToAccoid(data.accoid)
                 setShipToName(data.Ac_Name_E);
                 setShipToAddress(data.Address_E);
                 setShipToState(data.state);
@@ -854,6 +876,17 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
                                     label="Bank Details"
                                     value={paymentDetail}
                                     onChange={(e) => setPaymentDetail(e.target.value)}
+                                    sx={{ mb: 2 }}
+                                />
+
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <TextField
+                                    fullWidth
+                                    autoComplete='off'
+                                    label="Paid Amount"
+                                    value={paidAmount}
+                                    onChange={(e) => setPaidAmount(e.target.value)}
                                     sx={{ mb: 2 }}
                                 />
 

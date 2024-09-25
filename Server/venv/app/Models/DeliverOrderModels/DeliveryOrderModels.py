@@ -24,3 +24,6 @@ class PendingDO(db.Model):
     orderid = db.Column(db.Integer, nullable=False)
     new_party = db.Column(db.String(1), nullable=False)
     tenderdetailid = db.Column(db.Integer, nullable=False)
+    bill_to_accoid = db.Column(db.Integer, nullable=False)
+    ship_to_accoid = db.Column(db.Integer, nullable=False)
+    paid_amount = db.Column(db.Integer, nullable=False)

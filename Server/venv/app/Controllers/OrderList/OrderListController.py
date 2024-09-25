@@ -9,6 +9,8 @@ import requests
 from datetime import datetime
 from sqlalchemy import text
 from decimal import Decimal
+import asyncio
+import aiohttp
 
 # Get the base URL from environment variables
 API_URL = os.getenv('API_URL')
@@ -54,13 +56,21 @@ def update_buyer_quantal(tenderid, decrease_amount):
         {'tenderid': tenderid, 'decrease_amount': decrease_amount}
     )
 
-
     # Commit the transaction if needed
     db.session.commit()
 
-# API route to handle placing orders
+async def async_post(url, payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, json=payload) as response:
+            return await response.json(), response.status
+
+async def async_put(url, payload):
+    async with aiohttp.ClientSession() as session:
+        async with session.put(url, json=payload) as response:
+            return await response.json(), response.status
+
 @app.route(API_URL + "/placeOrder", methods=['POST'])
-def placeOrder():
+async def placeOrder():
     try:
         data = request.json
 
@@ -85,19 +95,15 @@ def placeOrder():
         ac_code = data.get("ac_code")
         Packing = 50
 
-        # Calculate the total quantal
+        # Calculate the total quantal and self balance asynchronously
         total_quantal = calculate_total_quantal(tenderid)
-        total_quantal = float(total_quantal) if isinstance(total_quantal, Decimal) else total_quantal
-
-        # Calculate the self_balance
         self_balance = calculate_self_quantal(tenderid)
+
+        total_quantal = float(total_quantal) if isinstance(total_quantal, Decimal) else total_quantal
         self_balance = float(self_balance) if isinstance(self_balance, Decimal) else self_balance
 
-
-        # Define common payload structure
         quantal_value = total_quantal + Buy_Qty if self_balance <= 0 else total_quantal
 
-        # Define common payload structure
         payload = {
             "headData": {
                 "Company_Code": 1,
@@ -127,27 +133,27 @@ def placeOrder():
                 "TCS_Amt": 0,
                 "TDS_Rate": 0,
                 "TDS_Amt": 0,
-                "Excise_Rate":0,
-                "Branch_Id":0,
-                "Voucher_No":0,
-                "Sell_Note_No":0, 
+                "Excise_Rate": 0,
+                "Branch_Id": 0,
+                "Voucher_No": 0,
+                "Sell_Note_No": 0,
                 "Packing": 50,
                 "Quantal": quantal_value,
-                "Bags": (total_quantal + Buy_Qty) * 100 / Packing, 
-                "CashDiff":0
+                "Bags": (total_quantal + Buy_Qty) * 100 / Packing,
+                "CashDiff": 0
             },
             "detailData": [
                 {
                     "rowaction": "add",
                     "Company_Code": 1,
                     "Buyer": ac_code,
-                    "buyerid":accoid,
-                    "Buyer_Party":ac_code,
-                    "buyerpartyid":accoid,
-                    "sub_broker":ac_code,
-                    "sbr":accoid,
-                    "ShipTo":ac_code,
-                    "shiptoid":accoid,
+                    "buyerid": accoid,
+                    "Buyer_Party": ac_code,
+                    "buyerpartyid": accoid,
+                    "sub_broker": ac_code,
+                    "sbr": accoid,
+                    "ShipTo": ac_code,
+                    "shiptoid": accoid,
                     "Buyer_Quantal": Buy_Qty,
                     "Sale_Rate": Buy_Rate,
                     "Commission_Rate": 0,
@@ -155,46 +161,37 @@ def placeOrder():
                     "Lifting_Date": Order_Date,
                     "IsActive": 1,
                     "year_code": 4,
-                    "CashDiff":0,
-                    "tcs_rate":0,
-                    "tcs_amt":0,
-                    "gst_rate":5,
-                    "tcs_amt":0,
-                    "gst_amt":0,
+                    "CashDiff": 0,
+                    "tcs_rate": 0,
+                    "tcs_amt": 0,
+                    "gst_rate": 5,
+                    "tcs_amt": 0,
+                    "gst_amt": 0,
                 }
             ]
         }
 
         if not tenderid or tenderid == 0:
             # Insert tender head detail
-            
             url = f"{request.host_url}{API_URL}/insert_tender_head_detail"
             payload['headData'].update({
                 "Tender_Date": Order_Date,
                 "Lifting_Date": liftingDate,
                 "Year_Code": 4,
                 "Packing": 50,
-                "Quantal": quantal_value, 
-                "Bags": (total_quantal + Buy_Qty) * 100 / Packing,  
+                "Quantal": quantal_value,
+                "Bags": (total_quantal + Buy_Qty) * 100 / Packing,
             })
+            response, status = await async_post(url, payload)
         else:
             # Update tender purchase
             url = f"{request.host_url}{API_URL}/update_tender_purchase?tenderid={tenderid}"
-   
-        # Perform the API call based on the operation
-        response = requests.post(url, json=payload) if not tenderid or tenderid == 0 else requests.put(url, json=payload)
+            response, status = await async_put(url, payload)
 
-        
-        if response.status_code not in (200, 201):
-            return jsonify({'error': 'Failed to process request', 'message': response.json()}), 500
+        if status not in (200, 201):
+            return jsonify({'error': 'Failed to process request', 'message': response}), 500
 
-        # Extract the details from the response
-        response_data = response.json()
-        added_details = response_data.get('addedDetails', [])
-
-        # update_buyer_quantal(tenderid, Buy_Qty)
- 
-        # If there are exactly two records, skip the first one
+        added_details = response.get('addedDetails', [])
         if len(added_details) == 2:
             added_details = added_details[1:]
 
@@ -209,7 +206,6 @@ def placeOrder():
         if not tenderid:
             tenderid = added_details[0].get('tenderid')
 
-        # Create new OrderList entry
         new_order = OrderList(
             Order_Date=Order_Date,
             Buy_Qty=Buy_Qty,
@@ -223,21 +219,50 @@ def placeOrder():
         db.session.add(new_order)
         db.session.commit()
 
-        # Call the update-tender-info API to update Tender_No and tenderid
-        update_url = f"{request.host_url}{API_URL}/update-tender-info?publishid={publishid}"
-        update_payload = {
-            "Tender_No": tender_no,
-            "tenderid": tenderid
+        orderid = new_order.orderid
+
+        service_bill_payload = {
+            "head_data": {
+                "Date": datetime.now().strftime('%Y/%m/%d'),
+                "Company_Code": 1,
+                "Year_Code": 4,
+                "Customer_Code": ac_code,
+                "GstRateCode": 2,
+                "cc": accoid,
+                "Subtotal": Buy_Qty * 2,
+                "IsTDS": 'N',
+                "orderid": orderid
+            },
+            "detail_data": [
+                {
+                    "rowaction": "add",
+                    "Company_Code": 1,
+                    "Year_Code": 4,
+                    "Item_Code": itemcode,
+                    "ic": ic,
+                    "Description": "We need to charge 1 RS per quintal for brokerage",
+                    "Detail_Id": 1,
+                    "Amount": Buy_Qty * 2
+                }
+            ]
         }
 
-        update_response = requests.put(update_url, json=update_payload)
-        if self_balance > 0 :
-            update_buyer_quantal(tenderid, Buy_Qty)
-        if update_response.status_code not in (200, 201):
-            # Log the error but continue processing
-            print(f"Failed to update tender info: {update_response.json()}")
+        service_response, service_status = await async_post(
+            "http://localhost:8080/api/eBuySugar/insert-servicebill", service_bill_payload)
 
-        # Emit the new order data to all connected clients
+        if service_status != 201:
+            return jsonify({"error": "Failed to create service bill", "details": service_response}), service_status
+
+        update_url = f"{request.host_url}{API_URL}/update-tender-info?publishid={publishid}"
+        update_payload = {"Tender_No": tender_no, "tenderid": tenderid}
+        update_response, update_status = await async_put(update_url, update_payload)
+
+        if update_status not in (200, 201):
+            print(f"Failed to update tender info: {update_response}")
+
+        if self_balance > 0:
+            update_buyer_quantal(tenderid, Buy_Qty)
+
         socketio.emit('newOrder', {
             'Order_Date': Order_Date,
             'Buy_Qty': Buy_Qty,

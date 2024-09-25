@@ -40,9 +40,9 @@ function AppContent() {
 
     return (
         <>
-         <GlobalEventHandler />
+         {/* <GlobalEventHandler /> */}
             {ComponentsConfig.find(route => route.path === pathname) && pathname !== "/myorders" && pathname !== "/eTender"
-                && pathname !== "/myreports" && <Navbar />}
+                && pathname !== "/myreports"  && pathname !== "/ordertracking" && <Navbar />}
             {pathname === "/myorders" && <Sidebar />}
             {pathname === "/eTender" && <Sidebar />}
             {pathname === "/myreports" && <Sidebar />}

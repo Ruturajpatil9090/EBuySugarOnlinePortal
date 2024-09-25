@@ -117,6 +117,7 @@ def gstaccountinfo():
             query = '''
             SELECT
                 dbo.nt_1_accountmaster.Ac_Code,
+                 dbo.nt_1_accountmaster.accoid,
                 dbo.nt_1_accountmaster.Ac_Name_E,
                 dbo.nt_1_accountmaster.Address_E,
                 dbo.nt_1_citymaster.city_name_e,
@@ -137,6 +138,7 @@ def gstaccountinfo():
         for row in result:
             formatted_row = {
                 'Ac_Code':row.Ac_Code,
+                'accoid':row.accoid,
                 'Ac_Name_E': row.Ac_Name_E,
                 'Address_E': row.Address_E,
                 'city_name_e': row.city_name_e,
@@ -194,19 +196,7 @@ def save_pending_do():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# Define the API route
+#Check order Status/tracking API Route
 @app.route(API_URL+"/checkOrderStatus", methods=['GET'])
 def check_order_status():
     order_id = request.args.get('order_id')
@@ -237,18 +227,37 @@ def check_order_status():
         is_in_deliveryorder = deliveryorder_result.count > 0
 
         # Step 3: Check in the DeliveryOrder table (doid != 0)
-        deliveryorder_query = '''
+        deliveryorder_query_Sale = '''
             SELECT COUNT(*) as count FROM dbo.nt_1_deliveryorder WHERE orderid = :order_id AND doid != 0 AND SB_No !=0
         '''
-        deliveryorder_result = db.session.execute(text(deliveryorder_query), {'order_id': order_id}).fetchone()
+        deliveryorder_result = db.session.execute(text(deliveryorder_query_Sale), {'order_id': order_id}).fetchone()
         is_In_SaleBill = deliveryorder_result.count > 0
 
+        # Step 5: Retrieve the SB_No from the DeliveryOrder table
+        sb_no_query = '''
+            SELECT SB_No FROM dbo.nt_1_deliveryorder WHERE orderid = :order_id AND doid != 0 AND SB_No != 0
+        '''
+        sb_no_result = db.session.execute(text(sb_no_query), {'order_id': order_id}).fetchone()
+        sb_no = sb_no_result.SB_No if sb_no_result else None
+        
+
+         # Step 6: Retrieve the Doc_No and status from the RentBillHead table
+        rentbillhead_query = '''
+            SELECT Doc_No FROM dbo.nt_1_rentbillhead WHERE orderid = :order_id AND orderid != 0 AND Doc_No !=0
+        '''
+        rentbillhead_result = db.session.execute(text(rentbillhead_query), {'order_id': order_id}).fetchone()
+        doc_no = rentbillhead_result.Doc_No if rentbillhead_result else 0
+      
+    
         # Compile the response with true/false values for each check
         response = {
             'OrderList': is_in_orderlist,
             'PendingDO': is_in_pendingdo,
             'DeliveryOrder': is_in_deliveryorder,
-            'SaleBill': is_In_SaleBill
+            'SaleBill': is_In_SaleBill,
+            'SBNO': sb_no,
+            'ServiceBillDocNo': doc_no,
+      
         }
 
         # Emit the response to connected clients

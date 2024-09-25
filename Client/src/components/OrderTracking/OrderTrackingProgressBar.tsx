@@ -11,6 +11,7 @@ import {
 } from "@material-ui/core";
 import { withStyles } from "@material-ui/core/styles";
 import GenrateSaleBillReport from "./GenrateSaleBillReport";
+import ServiceBill from "./Servicebill"
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
@@ -110,6 +111,7 @@ const LinearStepper: React.FC<LinearStepperProps> = ({ orderid }) => {
         PendingDO: boolean;
         DeliveryOrder: boolean;
         SaleBill: boolean;
+        SB_No?: number;  
     }>({
         OrderList: false,
         PendingDO: false,
@@ -128,13 +130,14 @@ const LinearStepper: React.FC<LinearStepperProps> = ({ orderid }) => {
                     `${apiKey}/checkOrderStatus?order_id=${orderid}`
                 );
                 const data = await response.json();
-
+              
                 // Update the status from API response
                 setOrderStatus({
                     OrderList: data.OrderList,
                     PendingDO: data.PendingDO,
                     DeliveryOrder: data.DeliveryOrder,
                     SaleBill: data.SaleBill,
+                    SB_No: data.SBNO,
                 });
 
                 // Determine active step based on the status
@@ -200,13 +203,17 @@ const LinearStepper: React.FC<LinearStepperProps> = ({ orderid }) => {
                     <Typography variant="h5" align="center" style={{ color: '#16175d' }} >
                         Thank You! Your order has been completed.
                     </Typography>
-                    <GenrateSaleBillReport />
+                    <GenrateSaleBillReport sbNo={orderStatus.SB_No} /> {/* Pass SB_No to GenrateSaleBillReport */}
                 </div>
             ) : (
                 <div style={{ marginTop: "20px", textAlign: "center" }}>
                     {getStepContent(activeStep)}
                 </div>
             )}
+
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+                <ServiceBill />
+            </div>
         </div>
     );
 };
