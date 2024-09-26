@@ -8,9 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import SystemHelpMaster from "../Helper/HelpComponent/SystemMasterHelp";
 
-const userId = sessionStorage.getItem("user_id");
-const ac_code = sessionStorage.getItem("ac_code");
-const accoid = sessionStorage.getItem("accoid");
+
 
 // Define the validation schema with Zod
 const schema = z.object({
@@ -36,6 +34,10 @@ interface UserResaleFormProps {
 const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLButtonElement>(null);
+
+const userId = sessionStorage.getItem("user_id");
+const ac_code = sessionStorage.getItem("ac_code");
+const accoid = sessionStorage.getItem("accoid");
 
   const [companies, setCompanies] = useState<{ id: number; name: string, accoid: number }[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<number | null>(null);

@@ -1,0 +1,57 @@
+/* TenderComponent.module.css */
+.tenderContainer {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
+.tenderTitle {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.formControl {
+    margin-bottom: 15px;
+}
+
+.formButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.buttonSubmit {
+    background-color: #3182ce; /* Chakra Blue */
+    color: white;
+}
+
+.buttonReset {
+    background-color: #a0aec0; /* Gray */
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .formGrid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .formGrid {
+        grid-template-columns: 1fr; /* 1 column on extra small screens */
+    }
+}

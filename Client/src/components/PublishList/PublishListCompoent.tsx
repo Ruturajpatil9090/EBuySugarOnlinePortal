@@ -56,7 +56,7 @@ interface RowData {
 }
 
 const apiKey = process.env.REACT_APP_API_KEY;
-const socketURL = 'http://localhost:8080';
+const socketURL: string = process.env.REACT_APP_API_URL_SOCKET || 'http://localhost:8080';
 
 const PublishedListComponent: React.FC = () => {
   const [data, setData] = useState<RowData[]>([]);

@@ -17,7 +17,6 @@ import ToastComponent, {
   showSuccessToast,
 } from "../../UI/ToastComponent";
 const apiKey = process.env.REACT_APP_API_KEY;
-const socketURL = 'http://localhost:8080';
 
 interface RowData {
   Tender_No: number;

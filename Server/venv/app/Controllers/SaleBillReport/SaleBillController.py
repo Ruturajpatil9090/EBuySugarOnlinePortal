@@ -6,7 +6,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func
 import os
 
-
 # Get the base URL from environment variables
 API_URL= os.getenv('API_URL')
 

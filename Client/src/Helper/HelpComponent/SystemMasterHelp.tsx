@@ -158,7 +158,8 @@ const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name
                         autoComplete="off"
                         value={enteredCode}
                         onChange={handleCodeChange}
-                        style={{ width: "150px", height: "35px" }}
+                        style={{ width: "200px", height: "45px" }}
+                        placeholder="Slect Item"
                     />
                     <Button
                         variant="primary"

@@ -256,7 +256,7 @@ def insert_servicebill():
             'TRAN_TYPE': tran_type
         }
 
-        response = requests.post("http://localhost:8080/api/eBuySugar/create-Record-gLedger", params=query_params, json=gledger_entries)
+        response = requests.post( f"{request.host_url}{API_URL}/create-Record-gLedger", params=query_params, json=gledger_entries)
 
         if response.status_code == 201:
             db.session.commit()
