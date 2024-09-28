@@ -1,19 +1,35 @@
 from flask import jsonify, request
-from app import app, db
+from app import app, db,socketio
 from app.Models.ETender.MillTenderModels import MillTender
 from flask_cors import CORS
 import os
+from datetime import time
+from sqlalchemy import text
+from flask_socketio import SocketIO
 
 CORS(app, cors_allowed_origins="*")
 
 # Get the base URL from environment variables
 API_URL = os.getenv('API_URL')
 
+def format_dates(tender):
+    return {
+        "Start_Date": tender['Start_Date'].strftime('%Y-%m-%d') if tender['Start_Date'] else None,
+        "Start_Time": tender['Start_Time'].strftime('%H:%M') if tender['Start_Time'] else None,
+        "End_Date": tender['End_Date'].strftime('%Y-%m-%d') if tender['End_Date'] else None,
+        "End_Time": tender['End_Time'].strftime('%H:%M') if tender['End_Time'] else None,
+        "Lifting_Date": tender['Lifting_Date'].strftime('%Y-%m-%d') if tender['Lifting_Date'] else None,
+        "Last_Dateof_Payment": tender['Last_Dateof_Payment'].strftime('%Y-%m-%d') if tender['Last_Dateof_Payment'] else None,
+        "Created_Date": tender['Created_Date'].strftime('%Y-%m-%d') if tender['Created_Date'] else None,
+        "Modified_Date": tender['Modified_Date'].strftime('%Y-%m-%d') if tender['Modified_Date'] else None,
+    }
+
+
 # API to get the maximum MillTenderId
 @app.route(API_URL + "/get_max_mill_tender_id", methods=["GET"])
 def get_max_mill_tender_id():
     try:
-        max_tender = db.session.query(db.func.max(MillTender.MillTenderId)).scalar()
+        max_tender = db.session.query(db.func.max(MillTender.MillTenderId)).scalar() 
         
         if max_tender is None:
             return jsonify({'error': 'No MillTenders found'}), 404
@@ -28,11 +44,41 @@ def get_max_mill_tender_id():
 @app.route(API_URL + "/get_all_mill_tenders", methods=["GET"])
 def get_all_mill_tenders():
     try:
-        mill_tenders = MillTender.query.all()
+        # SQL query to fetch mill tenders with related data
+        sql_query = """
+        SELECT 
+            mt.*, 
+            mill.Ac_Name_E AS mill_name, 
+            item.System_Name_E AS item_name, 
+            uc.mill_name AS mill_user_name
+        FROM 
+            dbo.eBuySugar_MillTender mt
+        INNER JOIN 
+            dbo.nt_1_accountmaster mill ON mt.mc = mill.accoid
+        INNER JOIN 
+            dbo.qryItemMaster item ON mt.Item_Code = item.System_Code
+        INNER JOIN 
+            dbo.eBuySugar_UserCreation uc ON mt.MillUserId = uc.user_id;
+        """
+        
+        # Execute the SQL query
+        result = db.session.execute(text(sql_query))
+        mill_tenders = result.fetchall()
+        
         tenders_data = []
         for tender in mill_tenders:
-            tender_data = {column.key: getattr(tender, column.key) for column in tender.__table__.columns}
+            # Convert row object to dictionary
+            tender_data = dict(tender._mapping)
+            
+            # Format the date fields
+            formatted_dates = format_dates(tender_data)
+            tender_data.update(formatted_dates)
+            
             tenders_data.append(tender_data)
+
+
+            # Emit data to all connected clients via Socket.IO
+            socketio.emit('mill_tenders_data', tenders_data)
 
         return jsonify(tenders_data)
     except Exception as e:

@@ -31,6 +31,7 @@ class MillTender(db.Model):
     Open_Base_Rate_GST_Perc = db.Column(db.Numeric(18, 2), nullable=True)
     Open_Base_Rate_GST_Amount = db.Column(db.Numeric(18, 2), nullable=True)
     Open_Rate_Including_GST = db.Column(db.Numeric(18, 2), nullable=True)
+    MillUserId = db.Column(db.Integer, nullable=True)
     
     # Automatically set timestamp when a record is created
     Created_Date = db.Column(db.DateTime, default=func.now())

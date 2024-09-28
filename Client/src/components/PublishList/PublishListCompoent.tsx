@@ -23,6 +23,7 @@ import AdminResaleForm from "../../UI/AdminResaleForm";
 import Testimonials from "../Testinomials/Testimonials"
 import Footer from "../../Layout/Footer";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PublishETender from "../ETender/PublishETender/PublishETender"
 
 interface RowData {
   Tender_No: number;
@@ -513,8 +514,13 @@ const PublishedListComponent: React.FC = () => {
         />
       )}
       <div>
+      <PublishETender />
+      </div>
+
+      <div>
         <Testimonials />
       </div>
+      
       <div>
         <Footer />
       </div>

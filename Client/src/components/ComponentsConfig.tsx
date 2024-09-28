@@ -33,7 +33,7 @@ const routes = [
   },
   {
     path: '/eTender',
-    element: ETender
+    element: () => <PrivateRoute element={ETender} restrictToUserType2={true} /> 
   },
   {
     path: '/myreports',

@@ -15,7 +15,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
     const [itemCode, setItemCode] = useState<number | null>(null);
     const [Item_Name, setItemName] = useState<string | null>(null);
     const [ic, setIc] = useState<number | null>(null);
-    const [companies, setCompanies] = useState<{ id: number, name: string, accoid: number }[]>([]);
+    const [companies, setCompanies] = useState<{ id: number, name: string, accoid: number,user_id: number; }[]>([]);
     const [millTenderId, setMillTenderId] = useState<number | null>(null);
     const [alert, setAlert] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | undefined }>({
         open: false,
@@ -23,7 +23,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
         severity: undefined
     });
 
-
+    const UserId = sessionStorage.getItem("user_id")
 
     useEffect(() => {
         axios
@@ -33,7 +33,8 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     (company: { user_id: number; company_name: string; accoid: number; ac_code: number }) => ({
                         id: company.ac_code,
                         name: company.company_name,
-                        accoid: company.accoid
+                        accoid: company.accoid,
+                        user_id: company.user_id 
                     })
                 );
                 setCompanies(fetchedCompanies);
@@ -45,10 +46,12 @@ const TenderComponent: React.FC<TenderProps> = () => {
         // Fetch max mill tender ID
         axios.get(`${apiKey}/get_max_mill_tender_id`)
             .then((response) => {
-                setMillTenderId(response.data.max_mill_tender_id + 1);
+                const maxTenderId = response.data.max_mill_tender_id;
+                setMillTenderId(maxTenderId ? maxTenderId + 1 : 1);
             })
             .catch((error) => {
                 console.error("Error fetching max mill tender ID:", error);
+                setMillTenderId(1);
             });
 
     }, []);
@@ -65,7 +68,9 @@ const TenderComponent: React.FC<TenderProps> = () => {
             ...data,
             Item_Code: itemCode,
             ic,
-            mc: selectedCompany.accoid
+            mc: selectedCompany.accoid,
+            MillUserId: selectedCompany.user_id,
+            UserId
         };
 
         axios
@@ -77,10 +82,9 @@ const TenderComponent: React.FC<TenderProps> = () => {
                 setItemCode(null);
                 setItemName(null);
                 setIc(null)
-
                 setTimeout(() => {
                     window.location.reload();
-                }, 2000)
+                }, 1000)
             })
             .catch(error => {
                 console.error('Error creating tender:', error);
@@ -97,7 +101,6 @@ const TenderComponent: React.FC<TenderProps> = () => {
     const handleCloseAlert = () => {
         setAlert({ ...alert, open: false });
     };
-
 
     return (
         <Container>
@@ -285,7 +288,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 defaultValue="Domestic"
                                 variant="outlined"
                                 {...register('Sugar_Type')}
-                              
+
                                 error={!!errors.Sugar_Type}
                                 helperText={errors.Sugar_Type ? errors.Sugar_Type.message : ''}
                             />
