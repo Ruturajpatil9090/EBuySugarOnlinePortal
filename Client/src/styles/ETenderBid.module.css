@@ -1,0 +1,48 @@
+/* PublishListComponents.module.css */
+.tenderInfo {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.tenderItem {
+    display: flex;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tenderItem strong {
+    font-weight: 800;
+    color: #333;
+}
+
+.tenderItem span {
+    color: #1b04ee;
+}
+
+
+.container {
+    padding: 20px;
+}
+
+.title {
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.tenderInfo {
+    margin-bottom: 20px;
+    max-height: 400px;
+    overflow-y: auto; 
+}
+
+.bidInputs {
+    margin-top: 20px;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+}

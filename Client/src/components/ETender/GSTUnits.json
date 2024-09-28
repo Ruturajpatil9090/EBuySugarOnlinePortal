@@ -1,0 +1,260 @@
+[
+    {
+        "id": 1,
+        "name": "Bag",
+        "category": "Measure",
+        "abbreviation": "BAG"
+    },
+    {
+        "id": 2,
+        "name": "Bundles",
+        "category": "Measure",
+        "abbreviation": "BDL"
+    },
+    {
+        "id": 3,
+        "name": "Bale",
+        "category": "Measure",
+        "abbreviation": "BAL"
+    },
+    {
+        "id": 4,
+        "name": "Buckles",
+        "category": "Measure",
+        "abbreviation": "BKL"
+    },
+    {
+        "id": 5,
+        "name": "Billions Of Units",
+        "category": "Measure",
+        "abbreviation": "BOU"
+    },
+    {
+        "id": 6,
+        "name": "Box",
+        "category": "Measure",
+        "abbreviation": "BOX"
+    },
+    {
+        "id": 7,
+        "name": "Bottles",
+        "category": "Measure",
+        "abbreviation": "BTL"
+    },
+    {
+        "id": 8,
+        "name": "Bunches",
+        "category": "Measure",
+        "abbreviation": "BUN"
+    },
+    {
+        "id": 9,
+        "name": "Cans",
+        "category": "Measure",
+        "abbreviation": "CAN"
+    },
+    {
+        "id": 10,
+        "name": "Cartons",
+        "category": "Measure",
+        "abbreviation": "CTN"
+    },
+    {
+        "id": 11,
+        "name": "Dozen",
+        "category": "Measure",
+        "abbreviation": "DOZ"
+    },
+    {
+        "id": 12,
+        "name": "Drum",
+        "category": "Measure",
+        "abbreviation": "DRM"
+    },
+    {
+        "id": 13,
+        "name": "Great Gross",
+        "category": "Measure",
+        "abbreviation": "GGR"
+    },
+    {
+        "id": 14,
+        "name": "Gross",
+        "category": "Measure",
+        "abbreviation": "GRS"
+    },
+    {
+        "id": 15,
+        "name": "Numbers",
+        "category": "Measure",
+        "abbreviation": "NOS"
+    },
+    {
+        "id": 16,
+        "name": "Packs",
+        "category": "Measure",
+        "abbreviation": "PAC"
+    },
+    {
+        "id": 17,
+        "name": "Pieces",
+        "category": "Measure",
+        "abbreviation": "PCS"
+    },
+    {
+        "id": 18,
+        "name": "Pairs",
+        "category": "Measure",
+        "abbreviation": "PRS"
+    },
+    {
+        "id": 19,
+        "name": "Rolls",
+        "category": "Measure",
+        "abbreviation": "ROL"
+    },
+    {
+        "id": 20,
+        "name": "Sets",
+        "category": "Measure",
+        "abbreviation": "SET"
+    },
+    {
+        "id": 21,
+        "name": "Tablets",
+        "category": "Measure",
+        "abbreviation": "TBS"
+    },
+    {
+        "id": 22,
+        "name": "Ten Gross",
+        "category": "Measure",
+        "abbreviation": "TGM"
+    },
+    {
+        "id": 23,
+        "name": "Thousands",
+        "category": "Measure",
+        "abbreviation": "THD"
+    },
+    {
+        "id": 24,
+        "name": "Tubes",
+        "category": "Measure",
+        "abbreviation": "TUB"
+    },
+    {
+        "id": 25,
+        "name": "Units",
+        "category": "Measure",
+        "abbreviation": "UNT"
+    },
+    {
+        "id": 26,
+        "name": "Cubic Meter",
+        "category": "Volume",
+        "abbreviation": "CBM"
+    },
+    {
+        "id": 27,
+        "name": "Cubic Centimeter",
+        "category": "Volume",
+        "abbreviation": "CCM"
+    },
+    {
+        "id": 28,
+        "name": "Kilo Liter",
+        "category": "Volume",
+        "abbreviation": "KLR"
+    },
+    {
+        "id": 29,
+        "name": "Milliliter",
+        "category": "Volume",
+        "abbreviation": "MLT"
+    },
+    {
+        "id": 30,
+        "name": "US Gallons",
+        "category": "Volume",
+        "abbreviation": "UGS"
+    },
+    {
+        "id": 31,
+        "name": "Square Feet",
+        "category": "Area",
+        "abbreviation": "SQF"
+    },
+    {
+        "id": 32,
+        "name": "Square Meters",
+        "category": "Area",
+        "abbreviation": "SQM"
+    },
+    {
+        "id": 33,
+        "name": "Square Yards",
+        "category": "Area",
+        "abbreviation": "SQY"
+    },
+    {
+        "id": 34,
+        "name": "Gross Yards",
+        "category": "Length",
+        "abbreviation": "GYD"
+    },
+    {
+        "id": 35,
+        "name": "Kilo Meter",
+        "category": "Length",
+        "abbreviation": "KME"
+    },
+    {
+        "id": 36,
+        "name": "Meters",
+        "category": "Length",
+        "abbreviation": "MTR"
+    },
+    {
+        "id": 37,
+        "name": "Yards",
+        "category": "Length",
+        "abbreviation": "YDS"
+    },
+    {
+        "id": 38,
+        "name": "Centimeter",
+        "category": "Length",
+        "abbreviation": "CMS"
+    },
+    {
+        "id": 39,
+        "name": "Tonnes",
+        "category": "Weight",
+        "abbreviation": "TON"
+    },
+    {
+        "id": 40,
+        "name": "Quintal",
+        "category": "Weight",
+        "abbreviation": "QTL"
+    },
+    {
+        "id": 41,
+        "name": "Grams",
+        "category": "Weight",
+        "abbreviation": "GMS"
+    },
+    {
+        "id": 42,
+        "name": "Kilo Grams",
+        "category": "Weight",
+        "abbreviation": "KGS"
+    },
+    {
+        "id": 43,
+        "name": "Others",
+        "category": "",
+        "abbreviation": "OTH"
+    }
+]

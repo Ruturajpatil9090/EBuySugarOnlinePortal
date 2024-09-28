@@ -19,6 +19,7 @@ export const tenderSchema = z.object({
     Base_Rate: z.string().min(1, 'Base Rate is required'),
     Base_Rate_GST_Perc: z.string().min(1, 'GST is required'),
     Rate_Including_GST: z.string().min(1, 'Including GST Rate is required'),
+    Quantity_In:z.string().min(1, 'Including GST Rate is required'),
     // acceptTerms: z.boolean(),
     // agreeToConditions: z.boolean(),
     // subscribeToNewsletter: z.boolean(),

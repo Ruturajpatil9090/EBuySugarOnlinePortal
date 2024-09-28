@@ -6,6 +6,7 @@ import os
 from datetime import time
 from sqlalchemy import text
 from flask_socketio import SocketIO
+from decimal import Decimal
 
 CORS(app, cors_allowed_origins="*")
 
@@ -24,6 +25,13 @@ def format_dates(tender):
         "Modified_Date": tender['Modified_Date'].strftime('%Y-%m-%d') if tender['Modified_Date'] else None,
     }
 
+# Utility function to convert Decimal types to float
+def convert_decimal_to_float(data):
+    for key, value in data.items():
+        if isinstance(value, Decimal):
+            data[key] = float(value)  
+    return data
+
 
 # API to get the maximum MillTenderId
 @app.route(API_URL + "/get_max_mill_tender_id", methods=["GET"])
@@ -40,13 +48,13 @@ def get_max_mill_tender_id():
         return jsonify({'error': 'Internal server error'}), 500
 
 
-# API to get all MillTenders
+
 @app.route(API_URL + "/get_all_mill_tenders", methods=["GET"])
 def get_all_mill_tenders():
     try:
         # SQL query to fetch mill tenders with related data
         sql_query = """
-        SELECT 
+       SELECT 
             mt.*, 
             mill.Ac_Name_E AS mill_name, 
             item.System_Name_E AS item_name, 
@@ -58,7 +66,7 @@ def get_all_mill_tenders():
         INNER JOIN 
             dbo.qryItemMaster item ON mt.Item_Code = item.System_Code
         INNER JOIN 
-            dbo.eBuySugar_UserCreation uc ON mt.MillUserId = uc.user_id;
+            dbo.eBuySugar_UserCreation uc ON mt.MillUserId = uc.user_id order by MillTenderId desc;
         """
         
         # Execute the SQL query
@@ -73,12 +81,11 @@ def get_all_mill_tenders():
             # Format the date fields
             formatted_dates = format_dates(tender_data)
             tender_data.update(formatted_dates)
+
+            # Convert Decimal fields to float
+            tender_data = convert_decimal_to_float(tender_data)
             
             tenders_data.append(tender_data)
-
-
-            # Emit data to all connected clients via Socket.IO
-            socketio.emit('mill_tenders_data', tenders_data)
 
         return jsonify(tenders_data)
     except Exception as e:
@@ -113,6 +120,9 @@ def create_mill_tender():
         new_mill_tender = MillTender(**new_tender_data)
         db.session.add(new_mill_tender)
         db.session.commit()
+
+        # Emit data to all connected clients via Socket.IO
+        socketio.emit('EtenderData', new_tender_data)
 
         return jsonify({'message': 'MillTender created successfully', 'MillTender': new_tender_data}), 201
     except Exception as e:

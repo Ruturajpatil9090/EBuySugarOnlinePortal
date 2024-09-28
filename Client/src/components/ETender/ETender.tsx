@@ -5,17 +5,18 @@ import useTenderForm from '../../hooks/useETenderForm';
 import { TenderSchema } from '../../validation/ETenderSchema';
 import SystemHelpMaster from "../../Helper/HelpComponent/SystemMasterHelp";
 import axios from 'axios';
+import GSTUnits from './GSTUnits.json';
 
 interface TenderProps { }
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
 const TenderComponent: React.FC<TenderProps> = () => {
-    const { register, handleSubmit, formState: { errors }, reset } = useTenderForm();
+    const { register, handleSubmit, formState: { errors }, reset, setValue } = useTenderForm();
     const [itemCode, setItemCode] = useState<number | null>(null);
     const [Item_Name, setItemName] = useState<string | null>(null);
     const [ic, setIc] = useState<number | null>(null);
-    const [companies, setCompanies] = useState<{ id: number, name: string, accoid: number,user_id: number; }[]>([]);
+    const [companies, setCompanies] = useState<{ id: number, name: string, accoid: number, user_id: number; }[]>([]);
     const [millTenderId, setMillTenderId] = useState<number | null>(null);
     const [alert, setAlert] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | undefined }>({
         open: false,
@@ -34,7 +35,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                         id: company.ac_code,
                         name: company.company_name,
                         accoid: company.accoid,
-                        user_id: company.user_id 
+                        user_id: company.user_id
                     })
                 );
                 setCompanies(fetchedCompanies);
@@ -55,6 +56,15 @@ const TenderComponent: React.FC<TenderProps> = () => {
             });
 
     }, []);
+
+    useEffect(() => {
+        const currentDate = new Date().toISOString().split('T')[0];
+        setValue('Start_Date', currentDate);
+        setValue('End_Date', currentDate);
+        setValue('Last_Dateof_Payment', currentDate);
+        setValue('Lifting_Date', currentDate);
+
+    }, [setValue]);
 
     const onSubmit = (data: TenderSchema) => {
         const selectedCompany = companies.find(company => company.id === data.Mill_Code);
@@ -123,7 +133,8 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     bgcolor: 'background.paper',
                     borderRadius: 2,
                     boxShadow: 3,
-                    marginTop: "5vh"
+                    marginTop: "5vh",
+                  
                 }}
             >
                 <Typography variant="h4" component="h1" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold' }}>
@@ -308,12 +319,31 @@ const TenderComponent: React.FC<TenderProps> = () => {
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
-                                label="Quantity in Quintal"
+                                label="Quantity"
                                 variant="outlined"
                                 {...register('Quantity')}
                                 error={!!errors.Quantity}
                                 helperText={errors.Quantity ? errors.Quantity.message : ''}
                             />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={6}>
+                            <TextField
+                                fullWidth
+                                select
+                                label="Quantity In"
+                                variant="outlined"
+                                defaultValue="Quintal"
+                                {...register('Quantity_In')}
+                                error={!!errors.Quantity_In}
+                                helperText={errors.Quantity_In ? errors.Quantity_In.message : ''}
+                            >
+                                {GSTUnits.map(unit => (
+                                    <MenuItem key={unit.id} value={unit.abbreviation}>
+                                        {unit.name} ({unit.abbreviation})
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
 
                         <Grid item xs={12} sm={6} md={6}>

@@ -311,6 +311,7 @@ const PublishedListComponent: React.FC = () => {
       </div>
 
       <div className={styles.container}>
+      <h1>Available On eBuy</h1>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
             <TableHead>
