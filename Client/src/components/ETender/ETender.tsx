@@ -12,7 +12,7 @@ interface TenderProps { }
 const apiKey = process.env.REACT_APP_API_KEY;
 
 const TenderComponent: React.FC<TenderProps> = () => {
-    const { register, handleSubmit, formState: { errors }, reset, setValue } = useTenderForm();
+    const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useTenderForm();
     const [itemCode, setItemCode] = useState<number | null>(null);
     const [Item_Name, setItemName] = useState<string | null>(null);
     const [ic, setIc] = useState<number | null>(null);
@@ -66,11 +66,52 @@ const TenderComponent: React.FC<TenderProps> = () => {
 
     }, [setValue]);
 
+    const calculateGST = () => {
+        const baseRateString = watch('Base_Rate') || '0';
+        const gstPercentageString = watch('Base_Rate_GST_Perc') || '0';
+
+        const baseRate = parseFloat(baseRateString);
+        const gstPercentage = parseFloat(gstPercentageString);
+
+        if (!isNaN(baseRate) && !isNaN(gstPercentage)) {
+            const gstAmount = (baseRate * gstPercentage) / 100;
+            const rateIncludingGST = baseRate + gstAmount;
+
+            setValue('Base_Rate_GST_Amount', gstAmount.toFixed(2)); // Ensure two decimal points
+            setValue('Rate_Including_GST', rateIncludingGST.toFixed(2)); // Ensure two decimal points
+        } else {
+            setValue('Base_Rate_GST_Amount', '0.00');
+            setValue('Rate_Including_GST', '0.00');
+        }
+    };
+
+
+    useEffect(() => {
+        // Watch changes on Base_Rate and Base_Rate_GST_Perc to trigger GST calculation
+        const subscription1 = watch((value, { name }) => {
+            if (name === 'Base_Rate' || name === 'Base_Rate_GST_Perc') {
+                calculateGST();
+            }
+        });
+
+        return () => subscription1.unsubscribe();
+    }, [watch]);
+
+
+
+
+
     const onSubmit = (data: TenderSchema) => {
         const selectedCompany = companies.find(company => company.id === data.Mill_Code);
 
         if (!selectedCompany) {
             setAlert({ open: true, message: "Selected company not found", severity: 'error' });
+            return;
+        }
+
+        // Check if item is selected
+        if (!itemCode || !ic) {
+            setAlert({ open: true, message: "You must select a Product Category.", severity: 'error' });
             return;
         }
 
@@ -134,7 +175,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     borderRadius: 2,
                     boxShadow: 3,
                     marginTop: "5vh",
-                  
+
                 }}
             >
                 <Typography variant="h4" component="h1" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold' }}>
@@ -286,6 +327,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 fullWidth
                                 label="Packing"
                                 variant="outlined"
+                                defaultValue="50"
                                 {...register('Packing')}
                                 error={!!errors.Packing}
                                 helperText={errors.Packing ? errors.Packing.message : ''}
@@ -327,7 +369,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
+                        {/* <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
                                 select
@@ -344,7 +386,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                     </MenuItem>
                                 ))}
                             </TextField>
-                        </Grid>
+                        </Grid> */}
 
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
@@ -373,6 +415,8 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 fullWidth
                                 label="Base_Rate_GST_Amount"
                                 variant="outlined"
+
+                                value={watch('Base_Rate_GST_Amount') || '0.00'}
 
                             />
                         </Grid>

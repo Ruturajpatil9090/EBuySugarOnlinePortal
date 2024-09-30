@@ -1,4 +1,3 @@
-// PublishedListETender.tsx
 import React, { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,13 +6,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import TablePagination from '@mui/material/TablePagination';
 import styles from '../../../styles/PublishListCompoents.module.css';
 import io from 'socket.io-client';
 import axios from "axios";
 import UserBidOpenPopup from './UserBidOpenPopup';
-import AdminBidOpenPopup from "./AdminBidOpenPopup"
+import AdminBidOpenPopup from './AdminBidOpenPopup'; // Import the new popup
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import Button from '@mui/material/Button';
+import EditTenderPopup from './EditETenderPopUp';
 
 const socketURL: string = process.env.REACT_APP_API_URL_SOCKET || 'http://localhost:8080';
 
@@ -36,6 +37,9 @@ interface Tender {
     End_Date: string;
     End_Time: string;
     MillUserId: string;
+    Base_Rate: string; 
+    Base_Rate_GST_Perc: string;  
+    Base_Rate_GST_Amount: string;  
 }
 
 const apiKey = process.env.REACT_APP_API_KEY;
@@ -46,11 +50,14 @@ const PublishedListETender: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
     const [popupOpen, setPopupOpen] = useState<boolean>(false);
-    const [adminPopupOpen, setAdminPopupOpen] = useState<boolean>(false);
+    const [adminBidPopupOpen, setAdminBidPopupOpen] = useState<boolean>(false); // State for Admin Bid Popup
+    const [editPopupOpen, setEditPopupOpen] = useState<boolean>(false);
+    const [page, setPage] = useState<number>(0);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
-    const isAdmin = sessionStorage.getItem("isAdmin")
-    const UserIdNew = sessionStorage.getItem("user_id")
-    const UserType = sessionStorage.getItem("user_type")
+    const isAdmin = sessionStorage.getItem("isAdmin");
+    const UserIdNew = sessionStorage.getItem("user_id");
+    const UserType = sessionStorage.getItem("user_type");
 
     const fetchTenders = async () => {
         try {
@@ -76,6 +83,10 @@ const PublishedListETender: React.FC = () => {
             fetchTenders();
         });
 
+        socket.on('mill_tender_updated', () => {
+            fetchTenders();
+        });
+
         socket.on('disconnect', () => { });
 
         return () => {
@@ -88,14 +99,44 @@ const PublishedListETender: React.FC = () => {
         setPopupOpen(true);
     };
 
-    const handleAdminBidClick = (tender: Tender) => {
+    const handleAdminBidTender = (tender: Tender) => {
         setSelectedTender(tender);
-        setAdminPopupOpen(true);
+        setAdminBidPopupOpen(true); // Open the Admin Bid Popup
     };
 
-    const handleDelete = (tender:Tender)=>{
+    const handleDelete = async (tender: Tender) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this record?");
+        if (confirmDelete) {
+            try {
+                await axios.delete(`${apiKey}/delete_mill_tender?MillTenderId=${tender.MillTenderId}`);
+                setTenders((prevTenders) => prevTenders.filter((item) => item.MillTenderId !== tender.MillTenderId));
+            } catch (error) {
+                console.error('Error deleting tender:', error);
+            }
+        }
+    };
 
-    }
+    const handleEditETender = (tender: Tender) => {
+        setSelectedTender(tender);
+        setEditPopupOpen(true);
+    };
+
+    const handleTenderUpdated = (updatedTender: Tender) => {
+        setTenders((prevTenders) =>
+            prevTenders.map((tender) => (tender.MillTenderId === updatedTender.MillTenderId ? updatedTender : tender))
+        );
+    };
+
+    const handleChangePage = (event: unknown, newPage: number) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const paginatedTenders = tenders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -116,17 +157,17 @@ const PublishedListETender: React.FC = () => {
                             <TableCell align="right">Season</TableCell>
                             <TableCell align="right">Packing</TableCell>
                             <TableCell align="right">Quantity</TableCell>
-                            <TableCell align="right">UserId</TableCell>
-                            <TableCell align="right">Start Date</TableCell>
+                            {/* <TableCell align="right">UserId</TableCell> */}
+                            {/* <TableCell align="right">Start Date</TableCell>
                             <TableCell align="right">Start Time</TableCell>
                             <TableCell align="right">End Date</TableCell>
-                            <TableCell align="right">End Time</TableCell>
+                            <TableCell align="right">End Time</TableCell> */}
                             <TableCell align="right">Including GST Rate</TableCell>
-                            <TableCell align="right">Action </TableCell>
+                            <TableCell align="right">Action</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {tenders.map((tender) => (
+                        {paginatedTenders.map((tender) => (
                             <TableRow key={tender.MillTenderId}>
                                 <TableCell component="th" scope="row">{tender.MillTenderId}</TableCell>
                                 <TableCell align="right">{tender.mill_user_name}</TableCell>
@@ -137,42 +178,40 @@ const PublishedListETender: React.FC = () => {
                                 <TableCell align="right">{tender.Season}</TableCell>
                                 <TableCell align="right">{tender.Packing}</TableCell>
                                 <TableCell align="right">{tender.Quantity}</TableCell>
-                                <TableCell align="right">{tender.UserId}</TableCell>
-                                <TableCell align="right">{tender.Start_Date}</TableCell>
+                                {/* <TableCell align="right">{tender.UserId}</TableCell> */}
+                                {/* <TableCell align="right">{tender.Start_Date}</TableCell>
                                 <TableCell align="right">{tender.Start_Time}</TableCell>
                                 <TableCell align="right">{tender.End_Date}</TableCell>
-                                <TableCell align="right">{tender.End_Time}</TableCell>
+                                <TableCell align="right">{tender.End_Time}</TableCell> */}
                                 <TableCell align="right">{tender.Rate_Including_GST}</TableCell>
                                 <TableCell align="right">
                                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                        {isAdmin == 'Y' && (
+                                        {isAdmin === 'Y' && (
                                             <>
-
                                                 <EditIcon
                                                     style={{ marginRight: '2px', color: 'blue', cursor: 'pointer', fontSize: '20px' }}
-                                                    onClick={() => handleBidClick(tender)}
+                                                    onClick={() => handleEditETender(tender)}
                                                 />
                                                 <DeleteIcon
                                                     style={{ marginRight: '4px', color: 'red', cursor: 'pointer', fontSize: '20px' }}
                                                     onClick={() => handleDelete(tender)}
                                                 />
-
                                                 <Button
                                                     variant="contained"
                                                     color="success"
                                                     size="small"
                                                     style={{ marginLeft: '5px' }}
-                                                    onClick={() => handleBidClick(tender)}
+                                                    onClick={() => handleAdminBidTender(tender)} // Open Admin Bid Popup
                                                 >
                                                     Bid
                                                 </Button>
                                             </>
                                         )}
-                                        {isAdmin == 'N' && UserType == '2' && tender.MillUserId == UserIdNew && (
+                                        {isAdmin === 'N' && UserType === '2' && tender.MillUserId == UserIdNew && (
                                             <>
                                                 <EditIcon
                                                     style={{ marginRight: '2px', color: 'blue', cursor: 'pointer', fontSize: '20px' }}
-                                                    onClick={() => handleBidClick(tender)}
+                                                    onClick={() => handleEditETender(tender)}
                                                 />
                                                 <DeleteIcon
                                                     style={{ marginRight: '4px', color: 'red', cursor: 'pointer', fontSize: '20px' }}
@@ -180,12 +219,11 @@ const PublishedListETender: React.FC = () => {
                                                 />
                                             </>
                                         )}
-                                        {isAdmin == 'N' && tender.MillUserId != UserIdNew && (
+                                        {isAdmin === 'N' && tender.MillUserId != UserIdNew && (
                                             <Button
                                                 variant="contained"
                                                 color="success"
                                                 size="small"
-
                                                 onClick={() => handleBidClick(tender)}
                                             >
                                                 Bid
@@ -198,10 +236,35 @@ const PublishedListETender: React.FC = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 50, 100]}
+                component="div"
+                count={tenders.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+            />
             {selectedTender && (
                 <UserBidOpenPopup
                     open={popupOpen}
                     onClose={() => setPopupOpen(false)}
+                    tender={selectedTender}
+                />
+            )}
+            {selectedTender && (
+                <EditTenderPopup
+                    open={editPopupOpen}
+                    onClose={() => setEditPopupOpen(false)}
+                    tender={selectedTender!}
+                    onTenderUpdated={handleTenderUpdated}
+                />
+            )}
+            {/* Add Admin Bid Popup */}
+            {selectedTender && (
+                <AdminBidOpenPopup
+                    open={adminBidPopupOpen}
+                    onClose={() => setAdminBidPopupOpen(false)}
                     tender={selectedTender}
                 />
             )}

@@ -39,6 +39,7 @@ from app.Controllers.DeliveryOrder.CityMaster.CityMasterController import *
 from app.Controllers.SaleBillReport.SaleBillController import *
 from app.Controllers.ServiceBill.ServiceBillController import *
 from app.Controllers.ETender.MillTenderController import *
+from app.Controllers.ETender.Bidding.ETenderBiddongController import *
 
 if __name__ == '__main__':
     socketio.run(app, host='localhost', port=8080,debug=True)

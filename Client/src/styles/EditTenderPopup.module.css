@@ -1,0 +1,42 @@
+.modalContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1000px; /* Adjust width as needed */
+    max-width: 90%; /* Responsive width */
+    height: auto; /* Allow height to adjust based on content */
+    max-height: 80%; /* Maximum height to keep the popup within viewport */
+    overflow-y: auto; /* Scroll if content exceeds max height */
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Space between elements */
+}
+
+.textField {
+    margin-bottom: 16px; /* Space below each TextField */
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: space-between; /* Space between buttons */
+}
+
+/* Optional: Styles for headings */
+h2 {
+    margin: 0; /* Remove default margin for a cleaner look */
+}
+
+/* Optional: Style for modal body to improve scrolling */
+.modalContainer::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.modalContainer::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2); /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded corners for scrollbar thumb */
+}

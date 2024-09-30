@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import Modal from '@mui/material/Modal';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import { Modal, Button, TextField, Box, IconButton, Snackbar,Alert } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
+import axios from 'axios';
 import styles from '../../../styles/ETenderBid.module.css';
 
 const style = {
@@ -17,6 +16,8 @@ const style = {
     p: 4,
     overflowY: 'auto',
 };
+
+const apiKey = process.env.REACT_APP_API_KEY;
 
 interface Tender {
     MillTenderId: number;
@@ -34,6 +35,7 @@ interface Tender {
     End_Date: string;
     End_Time: string;
     Rate_Including_GST: string;
+    MillUserId:string;
 }
 
 interface BidPopupProps {
@@ -45,6 +47,11 @@ interface BidPopupProps {
 const UserBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) => {
     const [buyQty, setBuyQty] = useState<number | ''>('');
     const [rate, setRate] = useState<number | ''>('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
+    const UserId = sessionStorage.getItem("user_id");
 
     // Reset state when the modal opens
     useEffect(() => {
@@ -64,17 +71,46 @@ const UserBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =>
         setRate(value === '' ? '' : Number(value));
     };
 
-    const handleSubmit = () => {
-        // Handle submit logic here
-        console.log('Buy Qty:', buyQty);
-        console.log('Rate:', rate);
-        onClose(); // Close the popup after submission
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
+    const handleSubmit = async () => {
+        const bidData = {
+            MillTenderId: tender.MillTenderId,
+            MillUserId: tender.MillUserId,
+            UserId: UserId, 
+            BidQuantity: buyQty,
+            BidRate: rate,
+            Issued_Qty: 0,
+            Issued_Rate: 0,
+        };
+
+        try {
+            const response = await axios.post(`${apiKey}/create_e_tender_bid`, bidData);
+            setSnackbarMessage('Bid submitted successfully!');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+
+            // Close the popup after a short delay
+            setTimeout(() => {
+                onClose();
+            }, 1000);
+        } catch (error:any) {
+            setSnackbarMessage('Error submitting bid: ' + (error.response?.data?.error || error.message));
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            console.error('Error submitting bid:', error);
+        }
     };
 
     return (
         <Modal open={open} onClose={onClose}>
             <Box sx={style}>
-                <Typography variant="h6" style={{ textAlign: 'center' }}>BID</Typography>
+                <Typography variant="h6" style={{ textAlign: 'center' }}>START BIDDING</Typography>
+                <IconButton onClick={onClose} aria-label="close" style={{ marginLeft: "400px", marginTop: '-60px' }}>
+                    <CloseIcon />
+                </IconButton>
                 <div className={styles.tenderInfo}>
                     <div className={styles.tenderItem}>
                         <strong>Mill Name:</strong> <span>{tender.mill_user_name}</span>
@@ -128,6 +164,17 @@ const UserBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =>
                 <Button variant="outlined" onClick={onClose} style={{ marginTop: '20px' }}>
                     Close
                 </Button>
+
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={handleSnackbarClose}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Box>
         </Modal>
     );

@@ -1,48 +1,48 @@
-/* PublishListComponents.module.css */
-.tenderInfo {
+/* ETenderBid.module.css */
+
+.modalContainer {
     display: flex;
     flex-direction: column;
-    margin-top: 20px;
+    align-items: center;
+}
+
+.tenderInfo {
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 .tenderItem {
     display: flex;
     justify-content: space-between;
-
+    padding: 8px 0;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.tenderItem strong {
-    font-weight: 800;
-    color: #333;
+input[type='number'] {
+    appearance: none;
+    -moz-appearance: textfield;
 }
 
-.tenderItem span {
-    color: #1b04ee;
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-
-.container {
-    padding: 20px;
+.selectUser {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
 }
 
-.title {
-    margin-bottom: 20px;
-    text-align: center;
-    font-weight: bold;
-}
-
-.tenderInfo {
-    margin-bottom: 20px;
-    max-height: 400px;
-    overflow-y: auto; 
-}
-
-.bidInputs {
+.submitButton {
     margin-top: 20px;
 }
 
-.buttonContainer {
-    display: flex;
-    justify-content: flex-end;
+.closeButton {
+    margin-top: 20px;
+    margin-left: 8px;
 }

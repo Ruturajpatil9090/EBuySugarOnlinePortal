@@ -147,6 +147,9 @@ def update_mill_tender():
             setattr(mill_tender, key, value)
 
         db.session.commit()
+        # Emit a socket event to notify clients of the update
+        socketio.emit('mill_tender_updated', {'MillTenderId': mill_tender_id, 'update': update_data})
+ 
 
         return jsonify({'message': 'MillTender updated successfully', 'MillTender': update_data})
     except Exception as e:
@@ -168,6 +171,9 @@ def delete_mill_tender():
 
         db.session.delete(mill_tender)
         db.session.commit()
+
+        # Emit the event after successful deletion
+        socketio.emit('EtenderData', {'message': 'ETender deleted successfully'})
 
         return jsonify({'message': 'MillTender deleted successfully'})
     except Exception as e:
