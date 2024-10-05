@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, TextField, Box, IconButton, Snackbar,Alert } from '@mui/material';
+import { Modal, Button, TextField, Box, IconButton, Snackbar, Alert } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
@@ -35,7 +35,7 @@ interface Tender {
     End_Date: string;
     End_Time: string;
     Rate_Including_GST: string;
-    MillUserId:string;
+    MillUserId: string;
 }
 
 interface BidPopupProps {
@@ -76,10 +76,26 @@ const UserBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =>
     };
 
     const handleSubmit = async () => {
+
+        if (buyQty === '' || buyQty <= 0) {
+            setSnackbarMessage('Please enter a valid Buy Quantity.');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            return;
+        }
+
+        const minRate = parseFloat(tender.Rate_Including_GST);
+        if (rate === '' || rate < minRate) {
+            setSnackbarMessage(`Bid rate must be greater than or equal to ${minRate}`);
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            return; 
+        }
+
         const bidData = {
             MillTenderId: tender.MillTenderId,
             MillUserId: tender.MillUserId,
-            UserId: UserId, 
+            UserId: UserId,
             BidQuantity: buyQty,
             BidRate: rate,
             Issued_Qty: 0,
@@ -96,7 +112,7 @@ const UserBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =>
             setTimeout(() => {
                 onClose();
             }, 1000);
-        } catch (error:any) {
+        } catch (error: any) {
             setSnackbarMessage('Error submitting bid: ' + (error.response?.data?.error || error.message));
             setSnackbarSeverity('error');
             setSnackbarOpen(true);

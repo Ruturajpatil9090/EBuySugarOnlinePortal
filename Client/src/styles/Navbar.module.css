@@ -19,12 +19,8 @@
     font-weight: bold;
     font-size: 20px; 
     margin: 0 10px;
-    color: #333; 
+    color: #000000; 
     text-decoration: none;
-}
-
-.navLink:hover {
-    color: #007bff; 
 }
 
 .dropdownMenu {
@@ -52,3 +48,5 @@
 .currentTime {
     margin-left: 15px;
 }
+
+

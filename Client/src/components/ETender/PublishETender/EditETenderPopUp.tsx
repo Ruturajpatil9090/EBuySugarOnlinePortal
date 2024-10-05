@@ -126,6 +126,7 @@ const EditTenderPopup: React.FC<EditTenderPopupProps> = ({ open, onClose, tender
                             onChange={handleChange}
                             fullWidth
                             className={styles.textField}
+                            
                         />
                     </Grid>
                     <Grid item xs={6}>

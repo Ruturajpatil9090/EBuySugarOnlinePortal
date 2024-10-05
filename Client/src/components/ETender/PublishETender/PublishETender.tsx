@@ -11,7 +11,7 @@ import styles from '../../../styles/PublishListCompoents.module.css';
 import io from 'socket.io-client';
 import axios from "axios";
 import UserBidOpenPopup from './UserBidOpenPopup';
-import AdminBidOpenPopup from './AdminBidOpenPopup'; // Import the new popup
+import AdminBidOpenPopup from './AdminBidOpenPopup';
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import Button from '@mui/material/Button';
 import EditTenderPopup from './EditETenderPopUp';
@@ -37,9 +37,9 @@ interface Tender {
     End_Date: string;
     End_Time: string;
     MillUserId: string;
-    Base_Rate: string; 
-    Base_Rate_GST_Perc: string;  
-    Base_Rate_GST_Amount: string;  
+    Base_Rate: string;
+    Base_Rate_GST_Perc: string;
+    Base_Rate_GST_Amount: string;
 }
 
 const apiKey = process.env.REACT_APP_API_KEY;
@@ -50,7 +50,7 @@ const PublishedListETender: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
     const [popupOpen, setPopupOpen] = useState<boolean>(false);
-    const [adminBidPopupOpen, setAdminBidPopupOpen] = useState<boolean>(false); // State for Admin Bid Popup
+    const [adminBidPopupOpen, setAdminBidPopupOpen] = useState<boolean>(false);
     const [editPopupOpen, setEditPopupOpen] = useState<boolean>(false);
     const [page, setPage] = useState<number>(0);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
@@ -83,7 +83,11 @@ const PublishedListETender: React.FC = () => {
             fetchTenders();
         });
 
-        socket.on('mill_tender_updated', () => {
+        socket.on('MillTenderClosed', () => {
+            fetchTenders();
+        });
+
+        socket.on('ETenderBidUpdated', () => {
             fetchTenders();
         });
 
@@ -92,6 +96,7 @@ const PublishedListETender: React.FC = () => {
         return () => {
             socket.disconnect();
         };
+
     }, []);
 
     const handleBidClick = (tender: Tender) => {
@@ -101,7 +106,7 @@ const PublishedListETender: React.FC = () => {
 
     const handleAdminBidTender = (tender: Tender) => {
         setSelectedTender(tender);
-        setAdminBidPopupOpen(true); // Open the Admin Bid Popup
+        setAdminBidPopupOpen(true);
     };
 
     const handleDelete = async (tender: Tender) => {
@@ -136,10 +141,30 @@ const PublishedListETender: React.FC = () => {
         setPage(0);
     };
 
-    const paginatedTenders = tenders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    // Function to filter tenders based on the current date and time, with additional conditions for admin and specific users
+    const filterTendersByDateTime = (tenders: Tender[]) => {
+        const currentDateTime = new Date();
+        const filteredTenders = tenders.filter(tender => {
+            const startDateTime = new Date(`${tender.Start_Date}T${tender.Start_Time}`);
+            const endDateTime = new Date(`${tender.End_Date}T${tender.End_Time}`);
+            if (currentDateTime > endDateTime) {
+                return false;
+            }
+            if (isAdmin === 'Y') {
+                return true;
+            }
+            if (tender.MillUserId == UserIdNew) {
+                return true;
+            }
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+            return currentDateTime >= startDateTime && currentDateTime <= endDateTime;
+        });
+
+        return filteredTenders;
+    };
+
+    const filteredTenders = filterTendersByDateTime(tenders);
+    const paginatedTenders = filteredTenders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     return (
         <div className={styles.container}>
@@ -158,82 +183,90 @@ const PublishedListETender: React.FC = () => {
                             <TableCell align="right">Packing</TableCell>
                             <TableCell align="right">Quantity</TableCell>
                             {/* <TableCell align="right">UserId</TableCell> */}
-                            {/* <TableCell align="right">Start Date</TableCell>
+                            <TableCell align="right">Start Date</TableCell>
                             <TableCell align="right">Start Time</TableCell>
                             <TableCell align="right">End Date</TableCell>
-                            <TableCell align="right">End Time</TableCell> */}
+                            <TableCell align="right">End Time</TableCell>
                             <TableCell align="right">Including GST Rate</TableCell>
                             <TableCell align="right">Action</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {paginatedTenders.map((tender) => (
-                            <TableRow key={tender.MillTenderId}>
-                                <TableCell component="th" scope="row">{tender.MillTenderId}</TableCell>
-                                <TableCell align="right">{tender.mill_user_name}</TableCell>
-                                <TableCell align="right">{tender.item_name}</TableCell>
-                                <TableCell align="right">{tender.Delivery_From}</TableCell>
-                                <TableCell align="right">{tender.Last_Dateof_Payment}</TableCell>
-                                <TableCell align="right">{tender.Lifting_Date}</TableCell>
-                                <TableCell align="right">{tender.Season}</TableCell>
-                                <TableCell align="right">{tender.Packing}</TableCell>
-                                <TableCell align="right">{tender.Quantity}</TableCell>
-                                {/* <TableCell align="right">{tender.UserId}</TableCell> */}
-                                {/* <TableCell align="right">{tender.Start_Date}</TableCell>
-                                <TableCell align="right">{tender.Start_Time}</TableCell>
-                                <TableCell align="right">{tender.End_Date}</TableCell>
-                                <TableCell align="right">{tender.End_Time}</TableCell> */}
-                                <TableCell align="right">{tender.Rate_Including_GST}</TableCell>
-                                <TableCell align="right">
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                        {isAdmin === 'Y' && (
-                                            <>
-                                                <EditIcon
-                                                    style={{ marginRight: '2px', color: 'blue', cursor: 'pointer', fontSize: '20px' }}
-                                                    onClick={() => handleEditETender(tender)}
-                                                />
-                                                <DeleteIcon
-                                                    style={{ marginRight: '4px', color: 'red', cursor: 'pointer', fontSize: '20px' }}
-                                                    onClick={() => handleDelete(tender)}
-                                                />
+                        {paginatedTenders.length === 0 ? (
+                            <TableRow>
+                                <h1 style={{ padding: '20px', justifyContent: 'center' }}>
+                                    No Data Found!
+                                </h1>
+                            </TableRow>
+                        ) : (
+                            paginatedTenders.map((tender) => (
+                                <TableRow key={tender.MillTenderId}>
+                                    <TableCell component="th" scope="row">{tender.MillTenderId}</TableCell>
+                                    <TableCell align="right">{tender.mill_user_name}</TableCell>
+                                    <TableCell align="right">{tender.item_name}</TableCell>
+                                    <TableCell align="right">{tender.Delivery_From}</TableCell>
+                                    <TableCell align="right">{tender.Last_Dateof_Payment}</TableCell>
+                                    <TableCell align="right">{tender.Lifting_Date}</TableCell>
+                                    <TableCell align="right">{tender.Season}</TableCell>
+                                    <TableCell align="right">{tender.Packing}</TableCell>
+                                    <TableCell align="right">{tender.Quantity}</TableCell>
+                                    <TableCell align="right">{tender.Start_Date}</TableCell>
+                                    <TableCell align="right">{tender.Start_Time}</TableCell>
+                                    <TableCell align="right">{tender.End_Date}</TableCell>
+                                    <TableCell align="right">{tender.End_Time}</TableCell>
+                                    <TableCell align="right">{tender.Rate_Including_GST}</TableCell>
+                                    <TableCell align="right">
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                            {isAdmin === 'Y' && (
+                                                <>
+                                                    <EditIcon
+                                                        style={{ marginRight: '2px', color: 'blue', cursor: 'pointer', fontSize: '20px' }}
+                                                        onClick={() => handleEditETender(tender)}
+                                                    />
+                                                    <DeleteIcon
+                                                        style={{ marginRight: '4px', color: 'red', cursor: 'pointer', fontSize: '20px' }}
+                                                        onClick={() => handleDelete(tender)}
+                                                    />
+                                                    <Button
+                                                        variant="contained"
+                                                        color="success"
+                                                        size="small"
+                                                        style={{ marginLeft: '5px' }}
+                                                        onClick={() => handleAdminBidTender(tender)}
+                                                    >
+                                                        Bid
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {isAdmin === 'N' && UserType === '2' && tender.MillUserId == UserIdNew && (
+                                                <>
+                                                    <EditIcon
+                                                        style={{ marginRight: '2px', color: 'blue', cursor: 'pointer', fontSize: '20px' }}
+                                                        onClick={() => handleEditETender(tender)}
+                                                    />
+                                                    <DeleteIcon
+                                                        style={{ marginRight: '4px', color: 'red', cursor: 'pointer', fontSize: '20px' }}
+                                                        onClick={() => handleDelete(tender)}
+                                                    />
+                                                </>
+                                            )}
+                                            {isAdmin === 'N' && tender.MillUserId != UserIdNew && (
                                                 <Button
                                                     variant="contained"
                                                     color="success"
                                                     size="small"
-                                                    style={{ marginLeft: '5px' }}
-                                                    onClick={() => handleAdminBidTender(tender)} // Open Admin Bid Popup
+                                                    onClick={() => handleBidClick(tender)}
                                                 >
                                                     Bid
                                                 </Button>
-                                            </>
-                                        )}
-                                        {isAdmin === 'N' && UserType === '2' && tender.MillUserId == UserIdNew && (
-                                            <>
-                                                <EditIcon
-                                                    style={{ marginRight: '2px', color: 'blue', cursor: 'pointer', fontSize: '20px' }}
-                                                    onClick={() => handleEditETender(tender)}
-                                                />
-                                                <DeleteIcon
-                                                    style={{ marginRight: '4px', color: 'red', cursor: 'pointer', fontSize: '20px' }}
-                                                    onClick={() => handleDelete(tender)}
-                                                />
-                                            </>
-                                        )}
-                                        {isAdmin === 'N' && tender.MillUserId != UserIdNew && (
-                                            <Button
-                                                variant="contained"
-                                                color="success"
-                                                size="small"
-                                                onClick={() => handleBidClick(tender)}
-                                            >
-                                                Bid
-                                            </Button>
-                                        )}
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
+
                 </Table>
             </TableContainer>
             <TablePagination
@@ -260,7 +293,6 @@ const PublishedListETender: React.FC = () => {
                     onTenderUpdated={handleTenderUpdated}
                 />
             )}
-            {/* Add Admin Bid Popup */}
             {selectedTender && (
                 <AdminBidOpenPopup
                     open={adminBidPopupOpen}

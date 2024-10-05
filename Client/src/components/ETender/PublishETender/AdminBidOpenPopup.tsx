@@ -103,6 +103,21 @@ const AdminBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =
     };
 
     const handleSubmit = async () => {
+        if (buyQty === '' || buyQty <= 0) {
+            setSnackbarMessage('Please enter a valid Buy Quantity.');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            return;
+        }
+
+        const minRate = parseFloat(tender.Rate_Including_GST);
+        if (rate === '' || rate < minRate) {
+            setSnackbarMessage(`Please Enter Valid Amount`);
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+            return; 
+        }
+
         const bidData = {
             MillTenderId: tender.MillTenderId,
             MillUserId: tender.MillUserId,

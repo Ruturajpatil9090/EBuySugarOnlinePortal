@@ -42,7 +42,7 @@ const NavbarComponent: React.FC = () => {
   };
 
   const handleDropdownToggle = () => {
-    setShowDropdown(prev => !prev); 
+    setShowDropdown(prev => !prev);
   };
 
   useEffect(() => {
@@ -87,9 +87,23 @@ const NavbarComponent: React.FC = () => {
           <Nav.Item>
             <Link to="/dashboard" className={styles.navLink}>Dashboard</Link>
           </Nav.Item>
-          <Nav.Item>
-            <Link to="/eTender" className={styles.navLink}>eTender</Link>
-          </Nav.Item>
+          <NavDropdown title={<span className={styles.boldLink}>eTender</span>} id="basic-nav-dropdown">
+            <NavDropdown.Item>
+              <Link to="/etenderutility" className={styles.navLink}>
+                eTender
+              </Link>
+            </NavDropdown.Item>
+            <NavDropdown.Item>
+              <Link to="/tender-process" className={styles.navLink}>
+                Tender Process
+              </Link>
+            </NavDropdown.Item>
+            <NavDropdown.Item>
+              <Link to="/open-tender-process" className={styles.navLink}>
+                Open Tender Process
+              </Link>
+            </NavDropdown.Item>
+          </NavDropdown>
           <Nav.Item>
             <Link to="/myorders" className={styles.navLink} onClick={handleMyOrders}>My Order</Link>
           </Nav.Item>
@@ -102,9 +116,18 @@ const NavbarComponent: React.FC = () => {
           <Nav.Item>
             <Link to="/CustomerCare" className={styles.navLink} onClick={handleCustomercare}>Customer Care: 9881999101</Link>
           </Nav.Item>
-          <NavDropdown title="Monthly Quota" id="basic-nav-dropdown">
-            <Link to="/millwise" className={styles.navLink}>Mill Wise</Link>
-            <Link to="/stateanddistwise" className={styles.navLink}>State & District Wise</Link>
+
+          <NavDropdown title={<span className={styles.boldLink}>Monthly Quota</span>} id="basic-nav-dropdown">
+            <NavDropdown.Item>
+              <Link to="/millwise" className={styles.navLink}>
+                Mill Wise
+              </Link>
+            </NavDropdown.Item>
+            <NavDropdown.Item>
+              <Link to="/stateanddistwise" className={styles.navLink}>
+                State & District Wise
+              </Link>
+            </NavDropdown.Item>
           </NavDropdown>
         </Nav>
       </Navbar.Collapse>
@@ -113,11 +136,11 @@ const NavbarComponent: React.FC = () => {
         <Dropdown ref={dropdownRef} className={styles.dropdown}>
           <Dropdown.Toggle
             as={Avatar}
-            sx={{ cursor: 'pointer', width: 60, height: 60 ,fontSize:"25px"}}
+            sx={{ cursor: 'pointer', width: 60, height: 60, fontSize: "25px" }}
             alt="Avatar"
             onClick={handleDropdownToggle}
           >
-            {userInitial}  
+            {userInitial}
           </Dropdown.Toggle>
           <Dropdown.Menu
             align="end"

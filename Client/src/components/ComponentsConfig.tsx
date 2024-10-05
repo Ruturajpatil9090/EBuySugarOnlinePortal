@@ -9,6 +9,10 @@ import ETender from "../components/ETender/ETender";
 import MyReports from './MyReports/MyReports';
 import EBuySettingsPage from './EBuySettings/EBuySettings';
 import OrderTracking from "../components/OrderTracking/OrderTracking"
+import ETenderProcess from './ETender/TenderProcess/ETenderProcess';
+import OpenETenderProcess from './ETender/OpenETender/OpenETenderProcess';
+import ETenderProcessPending from './ETender/TenderProcess/ETenderProcessPending';
+import ETenderUtility from "./ETender/ETenderUtility"
 
 const routes = [
   {
@@ -33,7 +37,7 @@ const routes = [
   },
   {
     path: '/eTender',
-    element: () => <PrivateRoute element={ETender} restrictToUserType2={true} /> 
+    element: () => <PrivateRoute element={ETender} restrictToUserType2={true} />
   },
   {
     path: '/myreports',
@@ -46,7 +50,26 @@ const routes = [
   {
     path: '/ordertracking',
     element: OrderTracking
+  },
+  {
+    path: '/tender-process',
+    element: () => <PrivateRoute element={ETenderProcess} restrictToUserType2={true} />
+
+  },
+  {
+    path: '/open-tender-process',
+    element: () => <PrivateRoute element={OpenETenderProcess} restrictToUserType2={true} />
+  },
+  {
+    path: '/tender-details',
+    element: ETenderProcessPending
+  },
+  {
+    path: '/etenderutility',
+    element: () => <PrivateRoute element={ETenderUtility} restrictToUserType2={true} />
   }
+
+  
 ];
 
 export default routes;

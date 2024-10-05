@@ -54,7 +54,7 @@ def get_all_mill_tenders():
     try:
         # SQL query to fetch mill tenders with related data
         sql_query = """
-       SELECT 
+         SELECT 
             mt.*, 
             mill.Ac_Name_E AS mill_name, 
             item.System_Name_E AS item_name, 
@@ -66,7 +66,7 @@ def get_all_mill_tenders():
         INNER JOIN 
             dbo.qryItemMaster item ON mt.Item_Code = item.System_Code
         INNER JOIN 
-            dbo.eBuySugar_UserCreation uc ON mt.MillUserId = uc.user_id order by MillTenderId desc;
+            dbo.eBuySugar_UserCreation uc ON mt.MillUserId = uc.user_id where Tender_Closed='N' order by MillTenderId desc
         """
         
         # Execute the SQL query

@@ -5,7 +5,7 @@ import useTenderForm from '../../hooks/useETenderForm';
 import { TenderSchema } from '../../validation/ETenderSchema';
 import SystemHelpMaster from "../../Helper/HelpComponent/SystemMasterHelp";
 import axios from 'axios';
-import GSTUnits from './GSTUnits.json';
+import { useNavigate } from 'react-router-dom';
 
 interface TenderProps { }
 
@@ -15,6 +15,8 @@ const TenderComponent: React.FC<TenderProps> = () => {
     const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useTenderForm();
     const [itemCode, setItemCode] = useState<number | null>(null);
     const [Item_Name, setItemName] = useState<string | null>(null);
+    const [systemMinRate, setSystemMinRate] = useState<string | null>(null);
+    const [systemMaxRate, setSyatemMaxRate] = useState<string | null>(null);
     const [ic, setIc] = useState<number | null>(null);
     const [companies, setCompanies] = useState<{ id: number, name: string, accoid: number, user_id: number; }[]>([]);
     const [millTenderId, setMillTenderId] = useState<number | null>(null);
@@ -24,7 +26,11 @@ const TenderComponent: React.FC<TenderProps> = () => {
         severity: undefined
     });
 
+    const tenderType = watch('Tender_Type', 'T');
+
+    const navigate = useNavigate()
     const UserId = sessionStorage.getItem("user_id")
+    const isAdmin = sessionStorage.getItem("isAdmin");
 
     useEffect(() => {
         axios
@@ -39,12 +45,18 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     })
                 );
                 setCompanies(fetchedCompanies);
+                if (isAdmin === 'Y') {
+                    setCompanies(fetchedCompanies);
+                } else {
+                    const userCompanies = fetchedCompanies.filter((company: any) => company.user_id.toString() === UserId);
+                    setCompanies(userCompanies);
+
+                }
             })
             .catch((error) => {
                 console.error("Error fetching company data:", error);
             });
 
-        // Fetch max mill tender ID
         axios.get(`${apiKey}/get_max_mill_tender_id`)
             .then((response) => {
                 const maxTenderId = response.data.max_mill_tender_id;
@@ -77,28 +89,45 @@ const TenderComponent: React.FC<TenderProps> = () => {
             const gstAmount = (baseRate * gstPercentage) / 100;
             const rateIncludingGST = baseRate + gstAmount;
 
-            setValue('Base_Rate_GST_Amount', gstAmount.toFixed(2)); // Ensure two decimal points
-            setValue('Rate_Including_GST', rateIncludingGST.toFixed(2)); // Ensure two decimal points
+            setValue('Base_Rate_GST_Amount', gstAmount.toFixed(2));
+            setValue('Rate_Including_GST', rateIncludingGST.toFixed(2));
         } else {
             setValue('Base_Rate_GST_Amount', '0.00');
             setValue('Rate_Including_GST', '0.00');
         }
     };
 
+    const calculateGSTOpenBaserate = () => {
+        const baseRateString = watch('Open_Base_Rate') || '0';
+        const gstPercentageString = watch('Open_Base_Rate_GST_Perc') || '0';
+
+        const baseRate = parseFloat(baseRateString);
+        const gstPercentage = parseFloat(gstPercentageString);
+
+        if (!isNaN(baseRate) && !isNaN(gstPercentage)) {
+            const gstAmount = (baseRate * gstPercentage) / 100;
+            const rateIncludingGST = baseRate + gstAmount;
+
+            setValue('Open_Base_Rate_GST_Amount', gstAmount.toFixed(2));
+            setValue('Open_Rate_Including_GST', rateIncludingGST.toFixed(2));
+        } else {
+            setValue('Open_Base_Rate_GST_Amount', '0.00');
+            setValue('Open_Rate_Including_GST', '0.00');
+        }
+    };
 
     useEffect(() => {
-        // Watch changes on Base_Rate and Base_Rate_GST_Perc to trigger GST calculation
         const subscription1 = watch((value, { name }) => {
             if (name === 'Base_Rate' || name === 'Base_Rate_GST_Perc') {
                 calculateGST();
+            }
+            if (name === 'Open_Base_Rate' || name === 'Open_Base_Rate_GST_Perc') {
+                calculateGSTOpenBaserate();
             }
         });
 
         return () => subscription1.unsubscribe();
     }, [watch]);
-
-
-
 
 
     const onSubmit = (data: TenderSchema) => {
@@ -109,19 +138,45 @@ const TenderComponent: React.FC<TenderProps> = () => {
             return;
         }
 
-        // Check if item is selected
         if (!itemCode || !ic) {
             setAlert({ open: true, message: "You must select a Product Category.", severity: 'error' });
             return;
         }
 
+        const minRate = parseFloat(systemMinRate || "0");
+        const maxRate = parseFloat(systemMaxRate || "0");
+        const baseRate = parseFloat(data.Base_Rate || '0') ;
+        const OpenBaseRate = parseFloat(data.Open_Base_Rate || '0') ;
+
+        if (data.Tender_Type === 'T') {
+            // Validate Base_Rate if Tender_Type is T
+            if (baseRate < minRate || baseRate > maxRate) {
+                setAlert({ open: true, message: `Base Rate must be between ${minRate} and ${maxRate}.`, severity: 'error' });
+                return;
+            }
+        } else {
+            // Validate Open_Base_Rate for other Tender_Types
+            if (OpenBaseRate < minRate || OpenBaseRate > maxRate) {
+                setAlert({ open: true, message: `Open Base Rate must be between ${minRate} and ${maxRate}.`, severity: 'error' });
+                return;
+            }
+        }
+
         const tenderData = {
             ...data,
+            Base_Rate: data.Base_Rate || '0',
+            Rate_Including_GST: data.Rate_Including_GST || '0',
+            Base_Rate_GST_Amount: data.Base_Rate_GST_Amount || '0',
+            Open_Base_Rate: data.Open_Base_Rate || '0',
+            Open_Rate_Including_GST: data.Open_Rate_Including_GST || '0',
+            Open_Base_Rate_GST_Amount: data.Open_Base_Rate_GST_Amount || '0',
             Item_Code: itemCode,
             ic,
             mc: selectedCompany.accoid,
             MillUserId: selectedCompany.user_id,
-            UserId
+            UserId,
+            Tender_Closed: 'N',
+            Open_tender_closed: 'N'
         };
 
         axios
@@ -134,8 +189,9 @@ const TenderComponent: React.FC<TenderProps> = () => {
                 setItemName(null);
                 setIc(null)
                 setTimeout(() => {
-                    window.location.reload();
+                    navigate('/publishedlist')
                 }, 1000)
+                navigate('/publishedlist')
             })
             .catch(error => {
                 console.error('Error creating tender:', error);
@@ -143,10 +199,12 @@ const TenderComponent: React.FC<TenderProps> = () => {
             });
     };
 
-    const handleSelctProduct = (code: number, name: string, ic: number) => {
+    const handleSelctProduct = (code: number, name: string, ic: number, minRate: string, maxRate: string) => {
         setItemCode(code);
         setItemName(name);
         setIc(ic);
+        setSystemMinRate(minRate);
+        setSyatemMaxRate(maxRate)
     };
 
     const handleCloseAlert = () => {
@@ -182,8 +240,8 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     Add Live Tender
                 </Typography>
                 <form onSubmit={handleSubmit(onSubmit)}>
+              
                     <Grid container spacing={3}>
-
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
@@ -194,13 +252,32 @@ const TenderComponent: React.FC<TenderProps> = () => {
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={8} md={6}>
+                        <Grid item xs={12} sm={6} md={6}>
+                            <TextField
+                                fullWidth
+                                select
+                                label="Tender Type"
+                                variant="outlined"
+                                defaultValue="T"
+                                {...register('Tender_Type')}
+                                error={!!errors.Tender_Type}
+                                helperText={errors.Tender_Type ? errors.Tender_Type.message : ''}
+                            >
+                                <MenuItem value="T">Tender</MenuItem>
+                                <MenuItem value="O">Open Tender</MenuItem>
+                            </TextField>
+                        </Grid>
+
+
+
+                        <Grid item xs={12} sm={12} md={6}>
                             <TextField
                                 fullWidth
                                 select
                                 label="Select Mill"
+
                                 variant="outlined"
-                                {...register('Mill_Code')}
+                                {...register('Mill_Code', { required: 'Mill selection is required' })}
                                 error={!!errors.Mill_Code}
                                 helperText={errors.Mill_Code ? errors.Mill_Code.message : ''}
                             >
@@ -211,6 +288,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 ))}
                             </TextField>
                         </Grid>
+
                         <Grid item xs={12} sm={12} md={6}>
                             <SystemHelpMaster
                                 onAcCodeClick={handleSelctProduct}
@@ -369,7 +447,7 @@ const TenderComponent: React.FC<TenderProps> = () => {
                             />
                         </Grid>
 
-                        {/* <Grid item xs={12} sm={6} md={6}>
+                        <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
                                 select
@@ -380,20 +458,17 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 error={!!errors.Quantity_In}
                                 helperText={errors.Quantity_In ? errors.Quantity_In.message : ''}
                             >
-                                {GSTUnits.map(unit => (
-                                    <MenuItem key={unit.id} value={unit.abbreviation}>
-                                        {unit.name} ({unit.abbreviation})
-                                    </MenuItem>
-                                ))}
                             </TextField>
-                        </Grid> */}
+                        </Grid>
 
+                        {tenderType === 'T' && (
+                    <>
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
                                 label="Base Rate"
                                 variant="outlined"
-                                {...register('Base_Rate')}
+                                {...register('Base_Rate', { required: 'Base Rate is required' })}
                                 error={!!errors.Base_Rate}
                                 helperText={errors.Base_Rate ? errors.Base_Rate.message : ''}
                             />
@@ -402,9 +477,10 @@ const TenderComponent: React.FC<TenderProps> = () => {
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
-                                label="GST 5%"
+                                label="GST %"
                                 variant="outlined"
-                                {...register('Base_Rate_GST_Perc')}
+                                defaultValue="5"
+                                {...register('Base_Rate_GST_Perc', { required: 'GST is required' })}
                                 error={!!errors.Base_Rate_GST_Perc}
                                 helperText={errors.Base_Rate_GST_Perc ? errors.Base_Rate_GST_Perc.message : ''}
                             />
@@ -413,11 +489,9 @@ const TenderComponent: React.FC<TenderProps> = () => {
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
-                                label="Base_Rate_GST_Amount"
+                                label="Base Rate GST Amount"
                                 variant="outlined"
-
                                 value={watch('Base_Rate_GST_Amount') || '0.00'}
-
                             />
                         </Grid>
 
@@ -426,14 +500,64 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 fullWidth
                                 label="Including GST Rate"
                                 variant="outlined"
-                                {...register('Rate_Including_GST')}
+                                {...register('Rate_Including_GST', { required: 'Including GST Rate is required' })}
                                 error={!!errors.Rate_Including_GST}
                                 helperText={errors.Rate_Including_GST ? errors.Rate_Including_GST.message : ''}
                             />
                         </Grid>
+                    </>
+                )}
+
+                {/* Open Tender Fields - Display only when Tender Type is 'O' */}
+                {tenderType === 'O' && (
+                    <>
+                        <Grid item xs={12} sm={6} md={6}>
+                            <TextField
+                                fullWidth
+                                label="Open Base Rate"
+                                variant="outlined"
+                                {...register('Open_Base_Rate', { required: 'Open Base Rate is required' })}
+                                error={!!errors.Open_Base_Rate}
+                                helperText={errors.Open_Base_Rate ? errors.Open_Base_Rate.message : ''}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={6}>
+                            <TextField
+                                fullWidth
+                                label="Open GST %"
+                                variant="outlined"
+                                defaultValue="5"
+                                {...register('Open_Base_Rate_GST_Perc', { required: 'GST is required' })}
+                                error={!!errors.Open_Base_Rate_GST_Perc}
+                                helperText={errors.Open_Base_Rate_GST_Perc ? errors.Open_Base_Rate_GST_Perc.message : ''}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={6}>
+                            <TextField
+                                fullWidth
+                                label="Open Base Rate GST Amount"
+                                variant="outlined"
+                                value={watch('Open_Base_Rate_GST_Amount') || '0.00'}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={6}>
+                            <TextField
+                                fullWidth
+                                label="Open Rate Including GST Rate"
+                                variant="outlined"
+                                {...register('Open_Rate_Including_GST', { required: 'Open Rate Including GST Rate is required' })}
+                                error={!!errors.Open_Rate_Including_GST}
+                                helperText={errors.Open_Rate_Including_GST ? errors.Open_Rate_Including_GST.message : ''}
+                            />
+                        </Grid>
+                    </>
+                )}
+
+
                     </Grid>
-
-
                     <Box display="flex" flexDirection="column" alignItems="flex-start" mt={4}>
                         <FormControlLabel
                             control={<Checkbox />}
@@ -469,7 +593,6 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 setItemCode(null);
                                 setItemName("");
                                 setIc(null);
-
                             }}
                         >
                             Reset
@@ -477,8 +600,6 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     </Box>
                 </form>
             </Box>
-
-
         </Container>
     );
 };

@@ -7,7 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 const apiKey = process.env.REACT_APP_API_KEY;
 
 interface SystemHelpMasterProps {
-    onAcCodeClick?: (code: number, name: string, id: number) => void;
+    onAcCodeClick?: (code: number, name: string, id: number,axRate : string,  minRate:string) => void;
     name: string;
 }
 
@@ -15,6 +15,8 @@ interface SystemData {
     System_Code: number;
     System_Name_E: string;
     systemid: number;
+    maxRate : string;
+    minRate:string;
 }
 
 const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name }) => {
@@ -28,6 +30,9 @@ const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name
     const itemsPerPage = 10;
     const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
     const [apiDataFetched, setApiDataFetched] = useState<boolean>(false);
+    const [minRate, setMinRate] = useState<string>("");
+const [maxRate, setMaxRate] = useState<string>("");
+
 
     const fetchData = useCallback(async () => {
         try {
@@ -69,9 +74,11 @@ const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name
             setEnteredCode(matchingItem.System_Code.toString());
             setEnteredName(matchingItem.System_Name_E);
             setSystemId(matchingItem.systemid.toString())
+            setMinRate(matchingItem.minRate); 
+            setMaxRate(matchingItem.maxRate); 
 
             if (onAcCodeClick) {
-                onAcCodeClick(matchingItem.System_Code, matchingItem.System_Name_E, matchingItem.systemid);
+                onAcCodeClick(matchingItem.System_Code, matchingItem.System_Name_E, matchingItem.systemid,matchingItem.minRate,matchingItem.maxRate);
             }
         } else {
             setEnteredName("");
@@ -82,9 +89,11 @@ const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name
         setEnteredCode(item.System_Code.toString());
         setEnteredName(item.System_Name_E);
         setSystemId(item.systemid.toString())
+        setMinRate(item.minRate); 
+        setMaxRate(item.maxRate); 
 
         if (onAcCodeClick) {
-            onAcCodeClick(item.System_Code, item.System_Name_E, item.systemid);
+            onAcCodeClick(item.System_Code, item.System_Name_E, item.systemid, item.minRate, item.maxRate);
         }
         setShowModal(false);
     };

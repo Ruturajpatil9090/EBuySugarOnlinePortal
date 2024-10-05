@@ -23,7 +23,9 @@ def system_master():
             response.append({
                 'System_Code': row.System_Code,
                 'System_Name_E': row.System_Name_E,
-                 'systemid': row.systemid,
+                'systemid': row.systemid,
+                'minRate': row.minRate,
+                'maxRate': row.maxRate,
                
             })
 
