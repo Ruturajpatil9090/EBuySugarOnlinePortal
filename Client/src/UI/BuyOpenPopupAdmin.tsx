@@ -66,7 +66,7 @@ const BuyPopup: React.FC<BuyPopupProps> = ({
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`${apiKey}/companieslist`)
+    axios.get(`${apiKey}/companieslistadmin`)
       .then(response => {
         const fetchedClients = response.data.map((client: any) => ({
           id: client.user_id,

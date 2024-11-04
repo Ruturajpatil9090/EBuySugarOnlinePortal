@@ -146,7 +146,6 @@ const TenderPublishComponent: React.FC = () => {
         .post(`${apiKey}/publishlist-tender`, rowsToPublish)
         .then((response) => {
           showSuccessToast("Record published successfully!");
-          console.log("Bulk data published successfully:", response);
           setPublishedList([...publishedList, Tender_No]);
         })
         .catch((error) => {

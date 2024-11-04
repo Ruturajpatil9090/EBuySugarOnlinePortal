@@ -100,6 +100,7 @@ const UserBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =>
             BidRate: rate,
             Issued_Qty: 0,
             Issued_Rate: 0,
+            Tender_Type: 'T'
         };
 
         try {

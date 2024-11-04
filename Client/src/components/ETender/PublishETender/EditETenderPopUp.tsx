@@ -3,6 +3,7 @@ import { Modal, Button, TextField, Box, Grid, IconButton, Select, MenuItem, Inpu
 import axios from 'axios';
 import styles from '../../../styles/EditTenderPopup.module.css';
 import CloseIcon from '@mui/icons-material/Close';
+import SystemHelpMaster from "../../../Helper/HelpComponent/SystemMasterHelp";
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
@@ -28,6 +29,7 @@ interface Tender {
     Base_Rate: string;
     Base_Rate_GST_Perc: string;
     Base_Rate_GST_Amount: string;
+    Tender_Type: string;
 }
 
 interface EditTenderPopupProps {
@@ -42,6 +44,11 @@ const EditTenderPopup: React.FC<EditTenderPopupProps> = ({ open, onClose, tender
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+    const [itemCode, setItemCode] = useState<number | null>(null);
+    const [Item_Name, setItemName] = useState<string | null>(null);
+    const [ic, setIc] = useState<number | null>(null);
+    const [systemMinRate, setSystemMinRate] = useState<string | null>(null);
+    const [systemMaxRate, setSyatemMaxRate] = useState<string | null>(null);
 
     useEffect(() => {
         setFormData(tender);
@@ -75,6 +82,7 @@ const EditTenderPopup: React.FC<EditTenderPopupProps> = ({ open, onClose, tender
             ...prev!,
             Base_Rate_GST_Amount: gstAmount.toFixed(2),
             Rate_Including_GST: rateIncludingGST.toFixed(2),
+            Tender_Type: 'T'
         }));
     };
 
@@ -97,16 +105,24 @@ const EditTenderPopup: React.FC<EditTenderPopupProps> = ({ open, onClose, tender
             console.error('Error updating tender:', error);
         } finally {
             setSnackbarOpen(true);
-            
+
             setTimeout(() => {
                 onClose();
-            }, 1000);
+            }, 500);
         }
     };
 
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
     };
+
+    // const handleSelctProduct = (code: number, name: string, ic: number, minRate: string, maxRate: string) => {
+    //     setItemCode(code);
+    //     setItemName(name);
+    //     setIc(ic);
+    //     setSystemMinRate(minRate);
+    //     setSyatemMaxRate(maxRate)
+    // };
 
     if (!formData) return null;
 
@@ -126,9 +142,16 @@ const EditTenderPopup: React.FC<EditTenderPopupProps> = ({ open, onClose, tender
                             onChange={handleChange}
                             fullWidth
                             className={styles.textField}
-                            
+
                         />
                     </Grid>
+
+                    {/* <Grid item xs={12} sm={12} md={6}>
+                        <SystemHelpMaster
+                            onAcCodeClick={handleSelctProduct}
+                            name="system-help-master"
+                        />
+                    </Grid> */}
                     <Grid item xs={6}>
                         <TextField
                             name="item_name"
@@ -222,7 +245,7 @@ const EditTenderPopup: React.FC<EditTenderPopupProps> = ({ open, onClose, tender
                     <Grid item xs={6}>
                         <TextField
                             name="Base_Rate_GST_Perc"
-                            label="GST Percentage"
+                            label="GST %"
                             value={formData.Base_Rate_GST_Perc}
                             onChange={handleChange}
                             fullWidth

@@ -10,6 +10,7 @@ class ETenderBid(db.Model):
     BidQuantity = db.Column(db.Numeric(18, 2), nullable=False)  
     BidRate = db.Column(db.Numeric(18, 2), nullable=False)       
     Issued_Qty = db.Column(db.Numeric(18, 2))                
-    Issued_Rate = db.Column(db.Numeric(18, 2))              
+    Issued_Rate = db.Column(db.Numeric(18, 2))     
+    Tender_Type = db.Column(db.String(1), nullable=True)         
 
 

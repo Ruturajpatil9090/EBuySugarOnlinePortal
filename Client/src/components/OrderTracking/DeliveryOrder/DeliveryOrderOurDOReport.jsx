@@ -78,13 +78,9 @@ const DeliveryOrderOurDoReport = ({ doc_no }) => {
         console.error("Error fetching data:", error);
       }
   };
-  console.log("Invoice Data", invoiceData)
-  console.log("isBillToShipToSame", isBillToShipToSame)
 
   const generatePdf = (data, isBillToShipToSame) => {
     setIsBillToShipToSame(false);
-
-    console.log("isBillToShipToSame", isBillToShipToSame)
 
     const pdf = new jsPDF({ orientation: "portrait" });
 

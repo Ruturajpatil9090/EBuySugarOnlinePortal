@@ -11,7 +11,6 @@ class PublishList(db.Model):
     itemcode = db.Column(db.Integer, nullable=False)
     Lifting_date = db.Column(db.Date, nullable=False)
     Payment_Date = db.Column(db.Date, nullable=False)
-    Display_End_Date = db.Column(db.DateTime, nullable=False)
     Mill_Rate = db.Column(db.Numeric(18, 2), nullable=False)
     Purchase_Rate = db.Column(db.Numeric(18, 2), nullable=False)
     Display_Qty = db.Column(db.Numeric(18, 2), nullable=False)
@@ -27,4 +26,8 @@ class PublishList(db.Model):
     Pt_Accoid = db.Column(db.Integer, nullable=False) 
     mc = db.Column(db.Integer, nullable=False) 
     ic = db.Column(db.Integer, nullable=False) 
+    Start_Date = db.Column(db.Date, nullable=True)
+    Start_Time = db.Column(db.Time, nullable=True)
+    End_Date = db.Column(db.Date, nullable=True)
+    End_Time = db.Column(db.Time, nullable=True)
 

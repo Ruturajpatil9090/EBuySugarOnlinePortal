@@ -297,7 +297,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
                     const accountMasterData = await accountMasterResponse.json();
 
                     const AccountMaster = accountMasterData.AccountMaster;
-                    console.log("293++++++=Acccountmaster",AccountMaster)
                     let AcCodeNew;
                     let Accoid;
 
@@ -414,7 +413,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
         const accountMasterData = await accountMasterResponse.json();
 
         const AccountMaster = accountMasterData.AccountMaster;
-        console.log("405++++++=Acccountmaster",AccountMaster)
 
         let AcCodeNew;
         let Accoid;
@@ -468,8 +466,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
             const response = await axios.get(`${APIURL}/gstaccountinfo?GST_No=${gstNumber}`);
             const data = response.data[0];
 
-            console.log("data gst bill acoid",data)
-
             if (data) {
                 setBillToAcCode(data.Ac_Code);
                 setBillToAccoid(data.accoid)
@@ -521,7 +517,6 @@ const OrderModal: React.FC<OrderModalProps> = ({ open, onClose, order }) => {
     return (
         <>
             <ToastComponent />
-
             <Modal
                 open={open}
                 onClose={onClose}

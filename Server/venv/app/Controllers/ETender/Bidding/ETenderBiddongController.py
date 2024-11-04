@@ -10,7 +10,7 @@ CORS(app, cors_allowed_origins="*")
 
 API_URL = os.getenv('API_URL')
 
-# API to create a new ETenderBid
+# create a bidding
 @app.route(API_URL + "/create_e_tender_bid", methods=["POST"])
 def create_e_tender_bid():
     try:
@@ -26,13 +26,11 @@ def create_e_tender_bid():
         if bid_count >= 5:
             return jsonify({'error': 'Your Limit is Exceeds'}), 403
 
-        # Create a new ETenderBid instance using unpacking
         new_bid = ETenderBid(**new_bid_data)
         
         db.session.add(new_bid)
         db.session.commit()
 
-        # Emit data to all connected clients via Socket.IO
         socketio.emit('ETenderBidData', new_bid_data)
 
         return jsonify({'message': 'ETenderBid created successfully', 'ETenderBids': new_bid_data}), 201
@@ -40,7 +38,7 @@ def create_e_tender_bid():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
-#fetch All Bidding ETenders 
+#get All eTender biddings
 @app.route(API_URL + "/get_e_tender_bids", methods=["GET"])
 def get_e_tender_bids():
     try:
@@ -104,7 +102,6 @@ def update_e_tender_bid():
                 existing_bid.Issued_Rate = issued_rate
                 db.session.commit() 
 
-                # Emit updated bid information to all connected clients
                 socketio.emit('ETenderBidUpdated', {'ETenderBidId': etender_bid_id, 'IssuedQuantity': issued_quantity, 'IssuedRate': issued_rate})
 
         return jsonify({'message': 'ETenderBids updated successfully'}), 200
@@ -112,7 +109,7 @@ def update_e_tender_bid():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-
+#Update etender Live and Upcoming etenders
 @app.route(API_URL + "/updateCloseetender_e_tender_bid", methods=["PUT"])
 def updateCloseetender_e_tender_bid():
     try:
@@ -125,16 +122,14 @@ def updateCloseetender_e_tender_bid():
             issued_rate = bid.get('IssuedRate')
             mill_tender_id = bid.get('MillTenderId')
 
-            # Update ETenderBid table
             existing_bid = ETenderBid.query.get(etender_bid_id)
             if existing_bid:
                 existing_bid.Issued_Qty = issued_quantity
                 existing_bid.Issued_Rate = issued_rate
                 db.session.commit()
 
-            # Execute raw SQL to update eBuySugar_MillTender table
-            if mill_tender_id:  # Make sure MillTenderId is available
-                print(f"Updating MillTenderId: {mill_tender_id}")  # Debugging info
+            if mill_tender_id:
+                print(f"Updating MillTenderId: {mill_tender_id}")
                 sql = text("""
                     UPDATE eBuySugar_MillTender
                     SET Tender_Closed = 'Y'
@@ -143,15 +138,78 @@ def updateCloseetender_e_tender_bid():
                 db.session.execute(sql, {'mill_tender_id': mill_tender_id})
                 db.session.commit()
 
-                # Emit a notification about closing the tender to all connected clients
-                socketio.emit('MillTenderClosed', {'MillTenderId': mill_tender_id})
+            socketio.emit('MillTenderClosed', existing_bid)
 
         return jsonify({'message': 'ETenderBids and MillTender updated successfully'}), 200
 
     except Exception as e:
-        db.session.rollback()  # Rollback any transaction in case of error
-        print(f"Error: {str(e)}")  # Print the error
+        db.session.rollback() 
+        print(f"Error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+    
+
+#Update the Open eTender And set the Open_tender_closed set to the Yes 
+@app.route(API_URL + "/updateCloseOpenetender_e_tender_bid", methods=["PUT"])
+def updateCloseOpenetender_e_tender_bid():
+    try:
+        update_data = request.json 
+        print(f"Received data: {update_data}") 
+
+        for bid in update_data:
+            etender_bid_id = bid.get('ETenderBidId')
+            issued_quantity = bid.get('IssuedQuantity')
+            issued_rate = bid.get('IssuedRate')
+            mill_tender_id = bid.get('MillTenderId')
+
+            existing_bid = ETenderBid.query.get(etender_bid_id)
+            if existing_bid:
+                existing_bid.Issued_Qty = issued_quantity
+                existing_bid.Issued_Rate = issued_rate
+                db.session.commit()
+
+            if mill_tender_id: 
+                print(f"Updating MillTenderId: {mill_tender_id}")
+                sql = text("""
+                    UPDATE eBuySugar_MillTender
+                    SET Open_tender_closed = 'Y'
+                    WHERE MillTenderId = :mill_tender_id
+                """)
+                db.session.execute(sql, {'mill_tender_id': mill_tender_id})
+                db.session.commit()
+
+            socketio.emit('MillTenderClosedOpen',existing_bid)
+
+        return jsonify({'message': 'ETenderBids and MillTender updated successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()  
+        print(f"Error: {str(e)}") 
         return jsonify({'error': str(e)}), 500
 
+# API to delete eTender by MillTenderId
+@app.route(API_URL + "/delete_e_tender", methods=["DELETE"])
+def delete_e_tender():
+    try:
+        mill_tender_id = request.args.get('MillTenderId')
+
+        if not mill_tender_id:
+            return jsonify({'error': 'MillTenderId is required'}), 400
+
+        bid_count = db.session.query(db.func.count(ETenderBid.ETenderBidId)) \
+            .filter(ETenderBid.MillTenderId == mill_tender_id) \
+            .scalar()
+
+        if bid_count > 0:
+            return jsonify({'error': 'Bid Present Against this Tender'}), 403
+
+        sql = text("DELETE FROM eBuySugar_MillTender WHERE MillTenderId = :mill_tender_id")
+        db.session.execute(sql, {'mill_tender_id': mill_tender_id})
+        db.session.commit()
+
+        return jsonify({'message': 'MillTender record deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 

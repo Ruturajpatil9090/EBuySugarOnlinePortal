@@ -8,8 +8,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import SystemHelpMaster from "../Helper/HelpComponent/SystemMasterHelp";
 
-
-
 // Define the validation schema with Zod
 const schema = z.object({
   Date: z.string().nonempty("Date is required"),
@@ -20,6 +18,10 @@ const schema = z.object({
   Payment_Date: z.string().nonempty("Payment Date is required"),
   Display_Rate: z.string().nonempty("Sale Rate is required"),
   Display_Qty: z.string().nonempty("Sale Quantal is required"),
+  Start_Date: z.string().nonempty("Start_Date  is required"),
+  Start_Time: z.string().nonempty("Start_Time is required"),
+  End_Date: z.string().nonempty("End_Date  is required"),
+  End_Time: z.string().nonempty("End_Time is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -35,15 +37,19 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
   const initialRef = useRef<HTMLInputElement>(null);
   const finalRef = useRef<HTMLButtonElement>(null);
 
-const userId = sessionStorage.getItem("user_id");
-const ac_code = sessionStorage.getItem("ac_code");
-const accoid = sessionStorage.getItem("accoid");
+  const userId = sessionStorage.getItem("user_id");
+  const ac_code = sessionStorage.getItem("ac_code");
+  const accoid = sessionStorage.getItem("accoid");
 
   const [companies, setCompanies] = useState<{ id: number; name: string, accoid: number }[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<number | null>(null);
   const [itemCode, setItemCode] = useState<number | null>(null);
   const [Item_Name, setItemName] = useState<String | null>(null);
   const [ic, setIc] = useState<number | null>(null);
+
+  const [systemDataS, setSystemDataS] = useState<any[]>([]);
+  const [systemDataZ, setSystemDataZ] = useState<any[]>([]);
+
 
   const getCurrentDate = () => {
     const today = new Date();
@@ -70,6 +76,8 @@ const accoid = sessionStorage.getItem("accoid");
       Payment_Date: getCurrentDate(),
       Display_Rate: "",
       Display_Qty: "",
+      Start_Date: getCurrentDate(),
+      End_Date: getCurrentDate()
     },
   });
 
@@ -78,7 +86,7 @@ const accoid = sessionStorage.getItem("accoid");
       .get(`${apiKey}/companieslist`)
       .then((response) => {
         const fetchedCompanies = response.data.map(
-          (company: { user_id: number; company_name: string, accoid: number,ac_code:number  }) => ({
+          (company: { user_id: number; company_name: string, accoid: number, ac_code: number }) => ({
             id: company.ac_code,
             name: company.company_name,
             accoid: company.accoid
@@ -89,7 +97,36 @@ const accoid = sessionStorage.getItem("accoid");
       .catch((error) => {
         console.error("Error fetching company data:", error);
       });
+
+    fetchAllSystemData();
   }, []);
+
+
+
+  const fetchAllSystemData = async () => {
+    try {
+      const response = await axios.get(`${apiKey}/get_system_master`);
+      if (response.data && response.data.length > 0) {
+        const systemDataS = response.data.filter((item: any) => item.System_Type === 'S');
+        const systemDataZ = response.data.filter((item: any) => item.System_Type === 'Z');
+        const systemDataU = response.data.filter((item: any) => item.System_Type === 'U');
+
+        setSystemDataS(systemDataS);
+        setSystemDataZ(systemDataZ);
+
+      } else {
+        console.warn("No system master data found");
+        setSystemDataS([]);
+        setSystemDataZ([]);
+
+      }
+    } catch (error) {
+      console.error("Error fetching system master data:", error);
+      setSystemDataS([]);
+      setSystemDataZ([]);
+
+    }
+  };
 
   const handleResaleAdd = (data: FormData, itemcode: number | null, Item_Name: String | null, ic: number | null,) => {
 
@@ -121,13 +158,11 @@ const accoid = sessionStorage.getItem("accoid");
         },
       })
       .then((response) => {
-        console.log("Form data published successfully:", response);
-        // Add your success toast or other UI feedback here
+
         onClose();
       })
       .catch((error) => {
         console.error("Error publishing form data:", error);
-        // Add your error toast or other UI feedback here
       });
   };
 
@@ -185,23 +220,90 @@ const accoid = sessionStorage.getItem("accoid");
           </Row>
           <Row className="mt-3">
             <Col md={12}>
-              <Form.Label>Select Item</Form.Label>
+              <Form.Label>Select Product</Form.Label>
               <SystemHelpMaster
                 onAcCodeClick={handleMillItemSelect}
                 name="system-help-master"
+                CategoryName=""
+                CategoryCode={0}
               />
             </Col>
           </Row>
+
+          {/* Start Date and Time Fields */}
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="Start_Date">
+                <Form.Label>Start Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  {...register("Start_Date")}
+                  isInvalid={!!errors.Start_Date}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.Start_Date?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="Start_Time">
+                <Form.Label>Start Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  {...register("Start_Time")}
+                  isInvalid={!!errors.Start_Time}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.Start_Time?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            {/* End Date and Time Fields */}
+            <Col md={6}>
+              <Form.Group controlId="End_Date">
+                <Form.Label>End Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  {...register("End_Date")}
+                  isInvalid={!!errors.End_Date}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.End_Date?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="End_Time">
+                <Form.Label>End Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  {...register("End_Time")}
+                  isInvalid={!!errors.End_Time}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.End_Time?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
           <Row>
             <Col md={6}>
               <Form.Group controlId="Grade">
                 <Form.Label>Grade</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Grade"
+                  as="select"
                   {...register("Grade")}
                   isInvalid={!!errors.Grade}
-                />
+                >
+                  {systemDataS.map((item: { id: number; System_Name_E: string }) => (
+                    <option key={item.id} value={item.System_Name_E}>
+                      {item.System_Name_E}
+                    </option>
+                  ))}
+                </Form.Control>
                 <Form.Control.Feedback type="invalid">
                   {errors.Grade?.message}
                 </Form.Control.Feedback>
@@ -211,11 +313,16 @@ const accoid = sessionStorage.getItem("accoid");
               <Form.Group controlId="Season">
                 <Form.Label>Season</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Season"
+                  as="select"
                   {...register("Season")}
                   isInvalid={!!errors.Season}
-                />
+                >
+                  {systemDataZ.map((item: { id: number; System_Name_E: string }) => (
+                    <option key={item.id} value={item.System_Name_E}>
+                      {item.System_Name_E}
+                    </option>
+                  ))}
+                </Form.Control>
                 <Form.Control.Feedback type="invalid">
                   {errors.Season?.message}
                 </Form.Control.Feedback>

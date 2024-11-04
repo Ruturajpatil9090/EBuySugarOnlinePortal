@@ -8,7 +8,6 @@ import logo from '../Assets/simplify.png';
 import styles from '../styles/LoginForm.module.css';
 import axios from 'axios';
 import ToastComponent, { showSuccessToast, showErrorToast } from '../UI/ToastComponent';
-
 const apiKey = process.env.REACT_APP_API_KEY;
 
 const LoginForm: React.FC = () => {
@@ -27,7 +26,6 @@ const LoginForm: React.FC = () => {
             const response = await axios.post(`${apiKey}/check-phone`, {
                 phone_no: data.mobileNumber,
             });
-
             if (response.status === 200) {
                 const { access_token } = response.data;
                 const { user_type, phone_no, first_name, user_id, menu_add_resell, ac_code, accoid } = response.data.user_data;
@@ -40,13 +38,11 @@ const LoginForm: React.FC = () => {
                 sessionStorage.setItem('ac_code', ac_code);
                 sessionStorage.setItem('accoid', accoid);
 
-                // Add logic to set isAdmin based on mobile number
                 if (data.mobileNumber === '8888118888') {
                     sessionStorage.setItem('isAdmin', 'Y');
                 } else {
                     sessionStorage.setItem('isAdmin', 'N');
                 }
-                // Check if ac_code and accoid are empty for non-admin users
                 if (sessionStorage.getItem('isAdmin') === 'N' && (!ac_code || !accoid)) {
                     navigate('/PageNotFound');
                     return;

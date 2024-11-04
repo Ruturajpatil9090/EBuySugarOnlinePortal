@@ -79,7 +79,7 @@ const AdminBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =
         if (open) {
             setBuyQty('');
             setRate('');
-            setSelectedUserId(''); // Reset the selected user
+            setSelectedUserId(''); 
         }
     }, [open]);
 
@@ -126,6 +126,7 @@ const AdminBidOpenPopup: React.FC<BidPopupProps> = ({ open, onClose, tender }) =
             BidRate: rate,
             Issued_Qty: 0,
             Issued_Rate: 0,
+             Tender_Type: 'T'
         };
     
         try {

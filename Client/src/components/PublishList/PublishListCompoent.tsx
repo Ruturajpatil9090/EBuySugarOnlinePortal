@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -24,6 +24,7 @@ import Testimonials from "../Testinomials/Testimonials"
 import Footer from "../../Layout/Footer";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PublishETender from "../ETender/PublishETender/PublishETender"
+import OpenPublishETenders from "../ETender/OpenETender/OpenPublishETender"
 
 interface RowData {
   Tender_No: number;
@@ -53,6 +54,10 @@ interface RowData {
   Payment_ToAcCode: number;
   Pt_Accoid: number;
   ic: number;
+  Start_Date: string;
+  Start_Time: string;
+  End_Date: string;
+  End_Time: string;
 
 }
 
@@ -76,6 +81,8 @@ const PublishedListComponent: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const navigate = useNavigate();
+  const userId = sessionStorage.getItem('user_id');
+  const [filteredTenders, setFilteredTenders] = useState<RowData[]>([]);
 
   useEffect(() => {
     const userId = sessionStorage.getItem('user_id');
@@ -88,6 +95,7 @@ const PublishedListComponent: React.FC = () => {
       const response = await axios.get(`${apiKey}/getAllPublishDataList`);
       setData(response.data);
       initializeStopStatus(response.data);
+
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -250,7 +258,39 @@ const PublishedListComponent: React.FC = () => {
     setPage(0);
   };
 
-  const paginatedData = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  // Function to filter tenders based on the current date and time, with additional conditions for admin and specific users
+  const filterTendersByDateTime = (data: RowData[]) => {
+    const currentDateTime = new Date();
+    const filteredTenders = data.filter(item => {
+      const startDateTime = new Date(`${item.Start_Date}T${item.Start_Time}`);
+      const endDateTime = new Date(`${item.End_Date}T${item.End_Time}`);
+      if (currentDateTime > endDateTime) {
+        return false;
+      }
+      if (isAdmin === 'Y') {
+        return true;
+      }
+      if (item.user_id == userId) {
+        return true;
+      }
+
+      return currentDateTime >= startDateTime && currentDateTime <= endDateTime;
+    });
+
+    return filteredTenders;
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const filtered = filterTendersByDateTime(data);
+      setFilteredTenders(filtered);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [data, isAdmin, userId]);
+
+  const paginatedData = filteredTenders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <>
@@ -301,17 +341,21 @@ const PublishedListComponent: React.FC = () => {
         )}
         {menuAddResell === '1' && (
           <div className={styles.mySaleOrder}>
-            <Button variant="contained" color="info" onClick={handleMySaleOrder}>
+            <Button
+              variant="contained"
+              style={{ backgroundColor: '#b0151a', color: '#fff' }}
+              onClick={handleMySaleOrder}
+            >
               My Sale Order
             </Button>
+
           </div>
         )}
-
 
       </div>
 
       <div className={styles.container}>
-      <h1>Available On eBuy</h1>
+        <h1>Available On eBuy</h1>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
             <TableHead>
@@ -515,13 +559,16 @@ const PublishedListComponent: React.FC = () => {
         />
       )}
       <div>
-      <PublishETender />
+        <PublishETender />
+      </div>
+      <div>
+        <OpenPublishETenders />
       </div>
 
       <div>
         <Testimonials />
       </div>
-      
+
       <div>
         <Footer />
       </div>

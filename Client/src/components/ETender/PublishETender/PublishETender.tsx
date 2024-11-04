@@ -16,6 +16,7 @@ import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import Button from '@mui/material/Button';
 import EditTenderPopup from './EditETenderPopUp';
 
+
 const socketURL: string = process.env.REACT_APP_API_URL_SOCKET || 'http://localhost:8080';
 
 interface Tender {
@@ -40,6 +41,7 @@ interface Tender {
     Base_Rate: string;
     Base_Rate_GST_Perc: string;
     Base_Rate_GST_Amount: string;
+    Tender_Type:string;
 }
 
 const apiKey = process.env.REACT_APP_API_KEY;
@@ -54,6 +56,7 @@ const PublishedListETender: React.FC = () => {
     const [editPopupOpen, setEditPopupOpen] = useState<boolean>(false);
     const [page, setPage] = useState<number>(0);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
 
     const isAdmin = sessionStorage.getItem("isAdmin");
     const UserIdNew = sessionStorage.getItem("user_id");
@@ -62,7 +65,9 @@ const PublishedListETender: React.FC = () => {
     const fetchTenders = async () => {
         try {
             const response = await axios.get(`${apiKey}/get_all_mill_tenders`);
-            const data: Tender[] = response.data;
+            // const data: Tender[] = response.data;
+            const data: Tender[] = response.data.filter((tender: Tender) => tender.Tender_Type === 'T');
+            setTenders(data);
             setTenders(data);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch tenders');
@@ -75,29 +80,53 @@ const PublishedListETender: React.FC = () => {
         fetchTenders();
     }, []);
 
+
     useEffect(() => {
         const socket = io(socketURL);
-        socket.on('connect', () => { });
-
-        socket.on('EtenderData', () => {
+    
+        const handleEtenderData = () => {
             fetchTenders();
-        });
-
-        socket.on('MillTenderClosed', () => {
+        };
+    
+        const handleMillTenderClosed = () => {
             fetchTenders();
-        });
-
-        socket.on('ETenderBidUpdated', () => {
+        };
+    
+        const handleETenderBidUpdated = () => {
             fetchTenders();
+        };
+    
+        const handleMillTenderUpdated = () => {
+            fetchTenders();
+        };
+    
+        socket.on('connect', () => {
+            console.log('Socket connected');
         });
-
-        socket.on('disconnect', () => { });
-
+    
+        socket.on('EtenderData', handleEtenderData);
+        socket.on('MillTenderClosed', handleMillTenderClosed);
+        socket.on('ETenderBidUpdated', handleETenderBidUpdated);
+        socket.on('mill_tender_updated', handleMillTenderUpdated);
+    
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+        });
+    
+        socket.on('disconnect', () => {
+            console.log('Socket disconnected');
+        });
+    
         return () => {
+            socket.off('EtenderData', handleEtenderData);
+            socket.off('MillTenderClosed', handleMillTenderClosed);
+            socket.off('ETenderBidUpdated', handleETenderBidUpdated);
+            socket.off('mill_tender_updated', handleMillTenderUpdated);
             socket.disconnect();
         };
-
+    
     }, []);
+    
 
     const handleBidClick = (tender: Tender) => {
         setSelectedTender(tender);
@@ -163,12 +192,21 @@ const PublishedListETender: React.FC = () => {
         return filteredTenders;
     };
 
-    const filteredTenders = filterTendersByDateTime(tenders);
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            const filtered = filterTendersByDateTime(tenders);
+            setFilteredTenders(filtered);
+        }, 1000); 
+
+        return () => clearInterval(intervalId);
+    }, [tenders, isAdmin, UserIdNew]); 
+
+    // const filteredTenders = filterTendersByDateTime(tenders);
     const paginatedTenders = filteredTenders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     return (
         <div className={styles.container}>
-            <h1>Live & Upcoming eTenders</h1>
+            <h1>Upcoming Live eTenders</h1>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
                     <TableHead>

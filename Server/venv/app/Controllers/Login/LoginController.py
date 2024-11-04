@@ -10,7 +10,6 @@ API_URL = os.getenv('API_URL')
 # API route for user login
 @app.route(API_URL+'/check-phone', methods=['POST'])
 def login():
-    # Get login credentials from request
     login_data = request.json
     if not login_data:
         return jsonify({'error': 'No data provided'}), 400

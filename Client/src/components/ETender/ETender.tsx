@@ -1,23 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import MotionHoc from "../../Pages/MotionHoc";
-import { Box, TextField, Button, MenuItem, Typography, Container, Grid, Snackbar, Alert, InputLabel, Checkbox, FormControlLabel } from '@mui/material';
+import { Box, TextField, Button, MenuItem, Typography, Container, Grid, Snackbar, Alert, Checkbox, FormControlLabel } from '@mui/material';
 import useTenderForm from '../../hooks/useETenderForm';
 import { TenderSchema } from '../../validation/ETenderSchema';
 import SystemHelpMaster from "../../Helper/HelpComponent/SystemMasterHelp";
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-interface TenderProps { }
+interface TenderData {
+    Base_Rate: number;
+    Base_Rate_GST_Amount: number;
+    Base_Rate_GST_Perc: number;
+    Created_Date: string;
+    Delivery_From: string;
+    End_Date: string;
+    End_Time: string;
+    Grade: string;
+    MillTenderId: number;
+    Mill_Code: number;
+    mill_name: string;
+    mill_user_name: string;
+    Quantity: number;
+    Rate_Including_GST: number;
+    Season: string;
+    item_name: string;
+    Item_Code: number;
+    Packing: number;
+    Tender_Type: string;
+    Quantity_In: string;
+}
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
-const TenderComponent: React.FC<TenderProps> = () => {
+const TenderComponent: React.FC<TenderData> = () => {
     const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useTenderForm();
     const [itemCode, setItemCode] = useState<number | null>(null);
     const [Item_Name, setItemName] = useState<string | null>(null);
+    const [ic, setIc] = useState<number | null>(null);
     const [systemMinRate, setSystemMinRate] = useState<string | null>(null);
     const [systemMaxRate, setSyatemMaxRate] = useState<string | null>(null);
-    const [ic, setIc] = useState<number | null>(null);
     const [companies, setCompanies] = useState<{ id: number, name: string, accoid: number, user_id: number; }[]>([]);
     const [millTenderId, setMillTenderId] = useState<number | null>(null);
     const [alert, setAlert] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | undefined }>({
@@ -25,6 +48,12 @@ const TenderComponent: React.FC<TenderProps> = () => {
         message: '',
         severity: undefined
     });
+    const [systemDataS, setSystemDataS] = useState<any[]>([]);
+    const [systemDataZ, setSystemDataZ] = useState<any[]>([]);
+    const [systemDataU, setSystemDataU] = useState<any[]>([]);
+
+    const location = useLocation();
+    const selectedtender: TenderData = location.state?.tender;
 
     const tenderType = watch('Tender_Type', 'T');
 
@@ -33,6 +62,31 @@ const TenderComponent: React.FC<TenderProps> = () => {
     const isAdmin = sessionStorage.getItem("isAdmin");
 
     useEffect(() => {
+        const fetchAllSystemData = async () => {
+            try {
+                const response = await axios.get(`${apiKey}/get_system_master`);
+                if (response.data && response.data.length > 0) {
+                    const systemDataS = response.data.filter((item: any) => item.System_Type === 'S');
+                    const systemDataZ = response.data.filter((item: any) => item.System_Type === 'Z');
+                    const systemDataU = response.data.filter((item: any) => item.System_Type === 'U');
+
+                    setSystemDataS(systemDataS);
+                    setSystemDataZ(systemDataZ);
+                    setSystemDataU(systemDataU);
+                } else {
+                    console.warn("No system master data found");
+                    setSystemDataS([]);
+                    setSystemDataZ([]);
+                    setSystemDataU([]);
+                }
+            } catch (error) {
+                console.error("Error fetching system master data:", error);
+                setSystemDataS([]);
+                setSystemDataZ([]);
+                setSystemDataU([]);
+            }
+        };
+
         axios
             .get(`${apiKey}/companieslist`)
             .then((response) => {
@@ -41,33 +95,80 @@ const TenderComponent: React.FC<TenderProps> = () => {
                         id: company.ac_code,
                         name: company.company_name,
                         accoid: company.accoid,
-                        user_id: company.user_id
+                        user_id: company.user_id,
                     })
                 );
                 setCompanies(fetchedCompanies);
+
                 if (isAdmin === 'Y') {
                     setCompanies(fetchedCompanies);
                 } else {
                     const userCompanies = fetchedCompanies.filter((company: any) => company.user_id.toString() === UserId);
                     setCompanies(userCompanies);
-
                 }
             })
             .catch((error) => {
                 console.error("Error fetching company data:", error);
             });
 
-        axios.get(`${apiKey}/get_max_mill_tender_id`)
-            .then((response) => {
-                const maxTenderId = response.data.max_mill_tender_id;
-                setMillTenderId(maxTenderId ? maxTenderId + 1 : 1);
-            })
-            .catch((error) => {
-                console.error("Error fetching max mill tender ID:", error);
-                setMillTenderId(1);
-            });
+        fetchAllSystemData();
 
-    }, []);
+        if (selectedtender) {
+            handleRecordsDoubleCliked(selectedtender.MillTenderId);
+        } else {
+            axios
+                .get(`${apiKey}/get_max_mill_tender_id`)
+                .then((response) => {
+                    const maxTenderId = response.data.max_mill_tender_id;
+                    setMillTenderId(maxTenderId ? maxTenderId + 1 : 1);
+                })
+                .catch((error) => {
+                    console.error("Error fetching max mill tender ID:", error);
+                    setMillTenderId(1);
+                });
+        }
+    }, [selectedtender]);
+
+    const handleRecordsDoubleCliked = async (MillTenderId: number) => {
+        try {
+            const response = await axios.get(`${apiKey}/getAlldatabyMillTenderId?MillTenderId=${MillTenderId}`);
+            const data = response.data;
+
+            // Set common values
+            setValue('Base_Rate', data.Base_Rate);
+            setValue('Base_Rate_GST_Amount', data.Base_Rate_GST_Amount);
+            setValue('Base_Rate_GST_Perc', data.Base_Rate_GST_Perc);
+            setValue('Delivery_From', data.Delivery_From);
+            setValue('Start_Date', data.Start_Date);
+            setValue('Start_Time', data.Start_Time);
+            setValue('End_Date', data.End_Date);
+            setValue('End_Time', data.End_Time);
+            setValue('Grade', data.Grade);
+            setValue('Quantity', data.Quantity);
+            setValue('Rate_Including_GST', data.Rate_Including_GST);
+            setValue('Season', data.Season);
+            setValue('Packing', data.Packing);
+            setValue('Tender_Type', data.Tender_Type);
+            setValue('Mill_Code', data.Mill_Code);
+            if (data.Tender_Type === 'T') {
+                setValue('Base_Rate', data.Base_Rate);
+                setValue('Base_Rate_GST_Amount', data.Base_Rate_GST_Amount);
+                setValue('Base_Rate_GST_Perc', data.Base_Rate_GST_Perc);
+            } else {
+                setValue('Open_Base_Rate', data.Open_Base_Rate);
+                setValue('Open_Base_Rate_GST_Amount', data.Open_Base_Rate_GST_Amount);
+                setValue('Open_Base_Rate_GST_Perc', data.Open_Base_Rate_GST_Perc);
+            }
+
+            setItemCode(data.Item_Code);
+            setItemName(data.item_name);
+            setIc(data.ic);
+        } catch (error) {
+            console.error("Error fetching tender data:", error);
+            setAlert({ open: true, message: 'Error fetching tender data.', severity: 'error' });
+        }
+    };
+
 
     useEffect(() => {
         const currentDate = new Date().toISOString().split('T')[0];
@@ -145,17 +246,15 @@ const TenderComponent: React.FC<TenderProps> = () => {
 
         const minRate = parseFloat(systemMinRate || "0");
         const maxRate = parseFloat(systemMaxRate || "0");
-        const baseRate = parseFloat(data.Base_Rate || '0') ;
-        const OpenBaseRate = parseFloat(data.Open_Base_Rate || '0') ;
+        const baseRate = parseFloat(data.Base_Rate || '0');
+        const OpenBaseRate = parseFloat(data.Open_Base_Rate || '0');
 
         if (data.Tender_Type === 'T') {
-            // Validate Base_Rate if Tender_Type is T
             if (baseRate < minRate || baseRate > maxRate) {
                 setAlert({ open: true, message: `Base Rate must be between ${minRate} and ${maxRate}.`, severity: 'error' });
                 return;
             }
         } else {
-            // Validate Open_Base_Rate for other Tender_Types
             if (OpenBaseRate < minRate || OpenBaseRate > maxRate) {
                 setAlert({ open: true, message: `Open Base Rate must be between ${minRate} and ${maxRate}.`, severity: 'error' });
                 return;
@@ -182,7 +281,6 @@ const TenderComponent: React.FC<TenderProps> = () => {
         axios
             .post(`${apiKey}/create_mill_tender`, tenderData)
             .then(response => {
-                console.log('Tender created successfully:', response.data);
                 setAlert({ open: true, message: 'ETender created successfully!', severity: 'success' });
                 reset();
                 setItemCode(null);
@@ -211,8 +309,81 @@ const TenderComponent: React.FC<TenderProps> = () => {
         setAlert({ ...alert, open: false });
     };
 
+    const handleBackArrow = () => {
+        navigate('/etenderutility')
+    }
+
+    const handleUpdateeTender = async () => {
+        const tenderData = {
+            ...watch(),
+            Item_Code: itemCode,
+            ic,
+            UserId,
+            Tender_Closed: 'N',
+            Open_tender_closed: 'N'
+        };
+
+        try {
+            const response = await axios.put(`${apiKey}/update_mill_tender?MillTenderId=${selectedtender.MillTenderId}`, tenderData);
+            setAlert({ open: true, message: 'ETender updated successfully!', severity: 'success' });
+            reset();
+            setItemCode(null);
+            setItemName(null);
+            setIc(null);
+            setTimeout(() => {
+                navigate('/publishedlist');
+            }, 1000);
+        } catch (error) {
+            console.error('Error updating tender:', error);
+            setAlert({ open: true, message: 'Error updating tender.', severity: 'error' });
+        }
+    };
+
+    const handleDeleteeTender = () => {
+        if (selectedtender) {
+            const confirmDelete = window.confirm("Are you sure you want to delete this tender?");
+            if (confirmDelete) {
+                axios.delete(`${apiKey}/delete_e_tender?MillTenderId=${selectedtender.MillTenderId}`)
+                    .then(response => {
+                        setAlert({ open: true, message: 'Tender deleted successfully!', severity: 'success' });
+                        navigate('/etenderutility');
+                    })
+                    .catch(error => {
+                        console.error('Error deleting tender:', error);
+                        if (error.response && error.response.status === 403) {
+                            setAlert({ open: true, message: 'Cannot delete this tender as bids are present.', severity: 'error' });
+                        } else {
+                            setAlert({ open: true, message: 'Error deleting tender.', severity: 'error' });
+                        }
+                    });
+            }
+        } else {
+            setAlert({ open: true, message: 'No tender selected to delete.', severity: 'error' });
+        }
+    };
+
     return (
         <Container>
+            <div>
+                <div >
+                    <Button variant="contained" onClick={handleBackArrow} style={{
+                        width: '40px',
+                        height: '40px',
+                        minWidth: '40px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: "#5349d6",
+                        marginTop: "20px",
+
+                    }}>
+                        <ArrowBackIcon />
+                    </Button>
+                </div>
+
+            </div>
+
             <Snackbar
                 open={alert.open}
                 autoHideDuration={2000}
@@ -240,15 +411,18 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     Add Live Tender
                 </Typography>
                 <form onSubmit={handleSubmit(onSubmit)}>
-              
+
                     <Grid container spacing={3}>
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
                                 label="MillTenderId"
                                 variant="outlined"
-                                value={millTenderId || ''}
+                                value={selectedtender ? selectedtender.MillTenderId : millTenderId}
                                 disabled={true}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                             />
                         </Grid>
 
@@ -258,26 +432,25 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 select
                                 label="Tender Type"
                                 variant="outlined"
-                                defaultValue="T"
-                                {...register('Tender_Type')}
+                                defaultValue={selectedtender ? selectedtender.Tender_Type : 'T'}
+                                {...register('Tender_Type', { required: 'Tender Type is required' })}
                                 error={!!errors.Tender_Type}
                                 helperText={errors.Tender_Type ? errors.Tender_Type.message : ''}
+                                disabled={selectedtender?.Tender_Type === 'O'}
                             >
                                 <MenuItem value="T">Tender</MenuItem>
                                 <MenuItem value="O">Open Tender</MenuItem>
                             </TextField>
                         </Grid>
 
-
-
                         <Grid item xs={12} sm={12} md={6}>
                             <TextField
                                 fullWidth
                                 select
                                 label="Select Mill"
-
                                 variant="outlined"
-                                {...register('Mill_Code', { required: 'Mill selection is required' })}
+                                defaultValue={selectedtender ? selectedtender.Mill_Code : ''}
+                                {...register('Mill_Code')}
                                 error={!!errors.Mill_Code}
                                 helperText={errors.Mill_Code ? errors.Mill_Code.message : ''}
                             >
@@ -293,6 +466,9 @@ const TenderComponent: React.FC<TenderProps> = () => {
                             <SystemHelpMaster
                                 onAcCodeClick={handleSelctProduct}
                                 name="system-help-master"
+                                CategoryName={selectedtender ? selectedtender.item_name : ""}
+                                CategoryCode={selectedtender ? selectedtender.Item_Code : 0}
+
                             />
                         </Grid>
                         <Grid item xs={12} sm={6} md={6}>
@@ -389,16 +565,29 @@ const TenderComponent: React.FC<TenderProps> = () => {
                             />
                         </Grid>
 
+
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
+                                select
                                 label="Season"
                                 variant="outlined"
+                                defaultValue={selectedtender ? selectedtender.Season : '2024-25'}
                                 {...register('Season')}
                                 error={!!errors.Season}
                                 helperText={errors.Season ? errors.Season.message : ''}
-                            />
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            >
+                                {systemDataZ.map((item, index) => (
+                                    <MenuItem key={index} value={item.System_Name_E}>
+                                        {item.System_Name_E}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
+
 
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
@@ -428,15 +617,27 @@ const TenderComponent: React.FC<TenderProps> = () => {
                         <Grid item xs={12} sm={6} md={6}>
                             <TextField
                                 fullWidth
+                                select
                                 label="Grade"
                                 variant="outlined"
+                                defaultValue={selectedtender ? selectedtender.Grade : 'SUGAR 30 KG'}
                                 {...register('Grade')}
                                 error={!!errors.Grade}
                                 helperText={errors.Grade ? errors.Grade.message : ''}
-                            />
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            >
+                                {systemDataS.map((item, index) => (
+                                    <MenuItem key={index} value={item.System_Name_E}>
+                                        {item.System_Name_E}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
+
+                        <Grid item xs={12} sm={4} md={4}>
                             <TextField
                                 fullWidth
                                 label="Quantity"
@@ -444,118 +645,144 @@ const TenderComponent: React.FC<TenderProps> = () => {
                                 {...register('Quantity')}
                                 error={!!errors.Quantity}
                                 helperText={errors.Quantity ? errors.Quantity.message : ''}
+                                autoComplete='off'
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
+                        <Grid item xs={12} sm={2} md={2}>
                             <TextField
-                                fullWidth
                                 select
                                 label="Quantity In"
                                 variant="outlined"
-                                defaultValue="Quintal"
+                                defaultValue={selectedtender ? selectedtender.Quantity_In : 'Quintal'}
                                 {...register('Quantity_In')}
                                 error={!!errors.Quantity_In}
                                 helperText={errors.Quantity_In ? errors.Quantity_In.message : ''}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
                             >
+                                {systemDataU.map((item, index) => (
+                                    <MenuItem key={index} value={item.System_Name_E}>
+                                        {item.System_Name_E}
+                                    </MenuItem>
+                                ))}
                             </TextField>
                         </Grid>
 
                         {tenderType === 'T' && (
-                    <>
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Base Rate"
-                                variant="outlined"
-                                {...register('Base_Rate', { required: 'Base Rate is required' })}
-                                error={!!errors.Base_Rate}
-                                helperText={errors.Base_Rate ? errors.Base_Rate.message : ''}
-                            />
-                        </Grid>
+                            <>
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Base Rate"
+                                        variant="outlined"
+                                        {...register('Base_Rate', { required: 'Base Rate is required' })}
+                                        error={!!errors.Base_Rate}
+                                        helperText={errors.Base_Rate ? errors.Base_Rate.message : ''}
+                                        autoComplete='off'
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="GST %"
-                                variant="outlined"
-                                defaultValue="5"
-                                {...register('Base_Rate_GST_Perc', { required: 'GST is required' })}
-                                error={!!errors.Base_Rate_GST_Perc}
-                                helperText={errors.Base_Rate_GST_Perc ? errors.Base_Rate_GST_Perc.message : ''}
-                            />
-                        </Grid>
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="GST %"
+                                        variant="outlined"
+                                        defaultValue="5"
+                                        {...register('Base_Rate_GST_Perc', { required: 'GST is required' })}
+                                        error={!!errors.Base_Rate_GST_Perc}
+                                        helperText={errors.Base_Rate_GST_Perc ? errors.Base_Rate_GST_Perc.message : ''}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Base Rate GST Amount"
-                                variant="outlined"
-                                value={watch('Base_Rate_GST_Amount') || '0.00'}
-                            />
-                        </Grid>
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Base Rate GST Amount"
+                                        variant="outlined"
+                                        value={watch('Base_Rate_GST_Amount') || '0.00'}
+                                    />
+                                </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Including GST Rate"
-                                variant="outlined"
-                                {...register('Rate_Including_GST', { required: 'Including GST Rate is required' })}
-                                error={!!errors.Rate_Including_GST}
-                                helperText={errors.Rate_Including_GST ? errors.Rate_Including_GST.message : ''}
-                            />
-                        </Grid>
-                    </>
-                )}
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Including GST Rate"
+                                        variant="outlined"
+                                        {...register('Rate_Including_GST', { required: 'Including GST Rate is required' })}
+                                        error={!!errors.Rate_Including_GST}
+                                        helperText={errors.Rate_Including_GST ? errors.Rate_Including_GST.message : ''}
+                                        autoComplete='off'
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                </Grid>
+                            </>
+                        )}
 
-                {/* Open Tender Fields - Display only when Tender Type is 'O' */}
-                {tenderType === 'O' && (
-                    <>
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Open Base Rate"
-                                variant="outlined"
-                                {...register('Open_Base_Rate', { required: 'Open Base Rate is required' })}
-                                error={!!errors.Open_Base_Rate}
-                                helperText={errors.Open_Base_Rate ? errors.Open_Base_Rate.message : ''}
-                            />
-                        </Grid>
+                        {/* Open Tender Fields - Display only when Tender Type is 'O' */}
+                        {tenderType === 'O' && (
+                            <>
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Open Base Rate"
+                                        variant="outlined"
+                                        {...register('Open_Base_Rate', { required: 'Open Base Rate is required' })}
+                                        error={!!errors.Open_Base_Rate}
+                                        helperText={errors.Open_Base_Rate ? errors.Open_Base_Rate.message : ''}
+                                        autoComplete='off'
+                                    />
+                                </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Open GST %"
-                                variant="outlined"
-                                defaultValue="5"
-                                {...register('Open_Base_Rate_GST_Perc', { required: 'GST is required' })}
-                                error={!!errors.Open_Base_Rate_GST_Perc}
-                                helperText={errors.Open_Base_Rate_GST_Perc ? errors.Open_Base_Rate_GST_Perc.message : ''}
-                            />
-                        </Grid>
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Open GST %"
+                                        variant="outlined"
+                                        defaultValue="5"
+                                        {...register('Open_Base_Rate_GST_Perc', { required: 'GST is required' })}
+                                        error={!!errors.Open_Base_Rate_GST_Perc}
+                                        helperText={errors.Open_Base_Rate_GST_Perc ? errors.Open_Base_Rate_GST_Perc.message : ''}
+                                    />
+                                </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Open Base Rate GST Amount"
-                                variant="outlined"
-                                value={watch('Open_Base_Rate_GST_Amount') || '0.00'}
-                            />
-                        </Grid>
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Open Base Rate GST Amount"
+                                        variant="outlined"
+                                        value={watch('Open_Base_Rate_GST_Amount') || '0.00'}
+                                    />
+                                </Grid>
 
-                        <Grid item xs={12} sm={6} md={6}>
-                            <TextField
-                                fullWidth
-                                label="Open Rate Including GST Rate"
-                                variant="outlined"
-                                {...register('Open_Rate_Including_GST', { required: 'Open Rate Including GST Rate is required' })}
-                                error={!!errors.Open_Rate_Including_GST}
-                                helperText={errors.Open_Rate_Including_GST ? errors.Open_Rate_Including_GST.message : ''}
-                            />
-                        </Grid>
-                    </>
-                )}
-
+                                <Grid item xs={12} sm={6} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Open Rate Including GST Rate"
+                                        variant="outlined"
+                                        {...register('Open_Rate_Including_GST', { required: 'Open Rate Including GST Rate is required' })}
+                                        error={!!errors.Open_Rate_Including_GST}
+                                        helperText={errors.Open_Rate_Including_GST ? errors.Open_Rate_Including_GST.message : ''}
+                                        autoComplete='off'
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                </Grid>
+                            </>
+                        )}
 
                     </Grid>
                     <Box display="flex" flexDirection="column" alignItems="flex-start" mt={4}>
@@ -574,29 +801,59 @@ const TenderComponent: React.FC<TenderProps> = () => {
                     </Box>
 
                     <Box display="flex" justifyContent="center" mt={4}>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            size="large"
-                            sx={{ mr: 2, minWidth: '150px' }}
-                        >
-                            Submit
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            size="large"
-                            sx={{ minWidth: '150px' }}
-                            onClick={() => {
-                                reset();
-                                setItemCode(null);
-                                setItemName("");
-                                setIc(null);
-                            }}
-                        >
-                            Reset
-                        </Button>
+                        {selectedtender ? (
+                            <>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    sx={{ mr: 2, minWidth: '150px' }}
+                                    onClick={handleUpdateeTender}
+                                >
+                                    Update
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    sx={{ mr: 2, minWidth: '150px' }}
+                                    onClick={handleDeleteeTender}
+                                >
+                                    Delete
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
+                                    sx={{ mr: 2, minWidth: '150px' }}
+                                >
+                                    Submit
+                                </Button>
+
+                                <Button
+                                    variant="outlined"
+                                    color="secondary"
+                                    size="large"
+                                    sx={{ minWidth: '150px' }}
+                                    onClick={() => {
+                                        reset();
+                                        setItemCode(null);
+                                        setItemName("");
+                                        setIc(null);
+                                    }}
+                                >
+                                    Reset
+                                </Button>
+
+                            </>
+                        )}
+
                     </Box>
                 </form>
             </Box>

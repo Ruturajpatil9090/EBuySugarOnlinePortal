@@ -35,11 +35,9 @@ def format_dates(task):
         "Date": task.Date.strftime('%Y-%m-%d') if task.Date else None,
     }
 
-
 # Function to execute SQL query and return match status
 def get_match_status(ac_code, company_code, year_code):
     try:
-        # Use SQLAlchemy's text() function to construct a parameterized SQL query
         sql_query = text("""
             SELECT CASE WHEN c.GSTStateCode = a.GSTStateCode THEN 'TRUE' ELSE 'FALSE' END AS match_status
             FROM dbo.nt_1_companyparameters AS c
@@ -47,38 +45,28 @@ def get_match_status(ac_code, company_code, year_code):
             WHERE a.Ac_Code = :ac_code AND a.company_code = :company_code AND c.Year_Code = :year_code
         """)
 
-        # Execute query with parameters
         result = db.session.execute(sql_query, {
             'ac_code': ac_code,
             'company_code': company_code,
             'year_code': year_code
         })
 
-        # Fetch the scalar result (single value)
         match_status = result.scalar()
-
-        # Print for debugging (optional)
-        print("match_status:", match_status)
-
         return match_status
-
     except Exception as e:
         return str(e)
     
 
 def get_gst_rate(doc_no):
     try:
-        # Define the SQL query to fetch the GST rate
         sql_query = text("""
             SELECT Rate
             FROM [EBuyOnlinePortal17082024].[dbo].[nt_1_gstratemaster]
             WHERE Doc_No = :doc_no
         """)
 
-        # Execute the query with the provided doc_no parameter
         result = db.session.execute(sql_query, {'doc_no': doc_no}).fetchone()
         
-        # Return the GST rate if found, otherwise None
         return result.Rate if result else None
 
     except SQLAlchemyError as e:
@@ -127,13 +115,8 @@ def insert_servicebill():
         head_data = data['head_data']
         detail_data = data['detail_data']
 
-        print("head_data",head_data)
-
         match_status = get_match_status(head_data['Customer_Code'],1,4)
         GstRate = get_gst_rate(2)
-
-        print("gstRate",GstRate)
-        print("match_status",match_status)
 
         if match_status == "TRUE":
             rate = GstRate

@@ -6,7 +6,7 @@ import { BellIcon } from '@chakra-ui/icons';
 import Avatar from '@mui/material/Avatar';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
-import Companylogo from "../../Assets/jklogo.png";
+import Companylogo from "../Assets/jklogo.png";
 
 const NavbarComponent: React.FC = () => {
   const userId = sessionStorage.getItem('user_id');
@@ -135,9 +135,14 @@ const NavbarComponent: React.FC = () => {
         <BellIcon boxSize={35} color="gray.500" marginLeft={20} />
         <Dropdown ref={dropdownRef} className={styles.dropdown}>
           <Dropdown.Toggle
+            // as={Avatar}
+            // sx={{ cursor: 'pointer', width: 60, height: 60, fontSize: "25px" }}
+            // alt="Avatar"
+            // onClick={handleDropdownToggle}
             as={Avatar}
-            sx={{ cursor: 'pointer', width: 60, height: 60, fontSize: "25px" }}
-            alt="Avatar"
+            sx={{ cursor: 'pointer', width: 80, height: 60, fontSize: "25px" }}
+            alt="Company Logo"
+            src={Companylogo}  // Set the src to your company logo
             onClick={handleDropdownToggle}
           >
             {userInitial}

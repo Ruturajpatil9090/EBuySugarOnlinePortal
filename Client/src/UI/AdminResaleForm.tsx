@@ -19,14 +19,17 @@ const schema = z.object({
   Display_Rate: z.string().nonempty("Sale Rate is required"),
   Display_Qty: z.string().nonempty("Sale Quantal is required"),
   user_name: z.number().positive("User is required"),
-  // Display_End_Date: z.string().nonempty("Date is required"),
+  Start_Date: z.string().nonempty("Start_Date  is required"),
+  Start_Time: z.string().nonempty("Start_Time is required"),
+  End_Date: z.string().nonempty("End_Date  is required"),
+  End_Time: z.string().nonempty("End_Time is required"),
 });
 
 type FormData = z.infer<typeof schema> & {
   Payment_ToAcCode?: number;
   Pt_Accoid?: number;
   mc?: number;
-  ic?:number;
+  ic?: number;
 };
 
 const apiKey = process.env.REACT_APP_API_KEY;
@@ -46,31 +49,12 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
   const [itemCode, setItemCode] = useState<number | null>(null);
   const [Item_Name, setItemName] = useState<String | null>(null);
   const [ic, setIc] = useState<number | null>(null);
+  const [systemDataS, setSystemDataS] = useState<any[]>([]);
+  const [systemDataZ, setSystemDataZ] = useState<any[]>([]);
 
   const getCurrentDate = () => {
     const now = new Date();
     return now.toISOString().split("T")[0];
-  };
-
-  const getCurrentDateTime = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  };
-
-  const formatDateTimeForSQL = (dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
   const {
@@ -93,8 +77,9 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
       Payment_ToAcCode: 0,
       Pt_Accoid: 0,
       mc: 0,
-      ic:0
-      // Display_End_Date: getCurrentDateTime(),
+      ic: 0,
+      Start_Date: getCurrentDate(),
+      End_Date: getCurrentDate()
     },
   });
 
@@ -103,7 +88,7 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
       .get(`${apiKey}/companieslist`)
       .then((response) => {
         const fetchedCompanies = response.data.map(
-          (company: { user_id: number; company_name: string, accoid: number,ac_code:number }) => ({
+          (company: { user_id: number; company_name: string, accoid: number, ac_code: number }) => ({
             id: company.ac_code,
             name: company.company_name,
             accoid: company.accoid
@@ -114,7 +99,33 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
       .catch((error) => {
         console.error("Error fetching company data:", error);
       });
+    fetchAllSystemData()
   }, []);
+
+  const fetchAllSystemData = async () => {
+    try {
+      const response = await axios.get(`${apiKey}/get_system_master`);
+      if (response.data && response.data.length > 0) {
+        const systemDataS = response.data.filter((item: any) => item.System_Type === 'S');
+        const systemDataZ = response.data.filter((item: any) => item.System_Type === 'Z');
+        const systemDataU = response.data.filter((item: any) => item.System_Type === 'U');
+
+        setSystemDataS(systemDataS);
+        setSystemDataZ(systemDataZ);
+
+      } else {
+        console.warn("No system master data found");
+        setSystemDataS([]);
+        setSystemDataZ([]);
+
+      }
+    } catch (error) {
+      console.error("Error fetching system master data:", error);
+      setSystemDataS([]);
+      setSystemDataZ([]);
+
+    }
+  };
 
   useEffect(() => {
     axios
@@ -143,7 +154,7 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
       console.error("Selected user or company not found");
       return;
     }
-    // const formattedDisplayEndDate = formatDateTimeForSQL(data.Display_End_Date);
+
     const formDataWithItemCode = {
       ...data,
       itemcode: itemCode || 0,
@@ -154,7 +165,7 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
       Pt_Accoid: selectedUser.accoid || null,
       mc: selectedCompany.accoid,
       ic: ic || 0
-      // Display_End_Date: formattedDisplayEndDate,
+
     };
 
     const formDataArray = [formDataWithItemCode];
@@ -180,7 +191,7 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
   };
 
   const onSubmit = (data: FormData) => {
-    handleResaleAdd(data, itemCode, Item_Name,ic);
+    handleResaleAdd(data, itemCode, Item_Name, ic);
   };
 
   return (
@@ -243,61 +254,123 @@ const UserResaleForm: React.FC<UserResaleFormProps> = ({ isOpen, onClose }) => {
                     {errors.Mill_Code?.message}
                   </Form.Control.Feedback>
                 </Form.Group>
-
               </Col>
-              {/* <Col md={6}>
-                <Form.Group controlId="DateTime">
-                  <Form.Label>End DateTime</Form.Label>
-                  <Form.Control
-                    type="datetime-local"
-                    {...register("Display_End_Date")}
-                    isInvalid={!!errors.Display_End_Date}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.Display_End_Date?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col> */}
-
             </Row>
             <Col md={12}>
-              <Form.Label>Select Item</Form.Label>
+              <Form.Label>Select Product</Form.Label>
               <SystemHelpMaster
                 onAcCodeClick={handleMillItemSelect}
                 name="system-help-master"
+                CategoryName=""
+                CategoryCode={0}
               />
             </Col>
           </Row>
 
+          {/* Start Date and Time Fields */}
           <Row>
+            <Col md={6}>
+              <Form.Group controlId="Start_Date">
+                <Form.Label>Start Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  {...register("Start_Date")}
+                  isInvalid={!!errors.Start_Date}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.Start_Date?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="Start_Time">
+                <Form.Label>Start Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  {...register("Start_Time")}
+                  isInvalid={!!errors.Start_Time}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.Start_Time?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+
+
+          <Row>
+            {/* End Date and Time Fields */}
+            <Col md={6}>
+              <Form.Group controlId="End_Date">
+                <Form.Label>End Date</Form.Label>
+                <Form.Control
+                  type="date"
+                  {...register("End_Date")}
+                  isInvalid={!!errors.End_Date}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.End_Date?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="End_Time">
+                <Form.Label>End Time</Form.Label>
+                <Form.Control
+                  type="time"
+                  {...register("End_Time")}
+                  isInvalid={!!errors.End_Time}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.End_Time?.message}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+
             <Col md={6}>
               <Form.Group controlId="Grade">
                 <Form.Label>Grade</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Grade"
+                  as="select"
                   {...register("Grade")}
                   isInvalid={!!errors.Grade}
-                />
+                >
+
+                  {systemDataS.map((item: { id: number; System_Name_E: string }) => (
+                    <option key={item.id} value={item.System_Name_E}>
+                      {item.System_Name_E}
+                    </option>
+                  ))}
+                </Form.Control>
                 <Form.Control.Feedback type="invalid">
                   {errors.Grade?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
+
             <Col md={6}>
               <Form.Group controlId="Season">
                 <Form.Label>Season</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Season"
+                  as="select"
                   {...register("Season")}
                   isInvalid={!!errors.Season}
-                />
+                >
+
+                  {systemDataZ.map((item: { id: number; System_Name_E: string }) => (
+                    <option key={item.id} value={item.System_Name_E}>
+                      {item.System_Name_E}
+                    </option>
+                  ))}
+                </Form.Control>
                 <Form.Control.Feedback type="invalid">
                   {errors.Season?.message}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
+
           </Row>
           <Row>
             <Col md={6}>

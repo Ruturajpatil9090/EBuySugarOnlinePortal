@@ -17,7 +17,6 @@ def format_dates(task):
         "Date": task.Date.strftime('%Y-%m-%d') if task.Date else None,
         "Lifting_date": task.Lifting_date.strftime('%Y-%m-%d') if task.Lifting_date else None,
         "Payment_Date": task.Payment_Date.strftime('%Y-%m-%d') if task.Payment_Date else None,
-        "Display_End_Date": task.Display_End_Date.strftime('%Y-%m-%d %H:%M:%S') if task.Display_End_Date else None
 
     }
 

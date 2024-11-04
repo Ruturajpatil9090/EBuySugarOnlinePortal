@@ -19,7 +19,6 @@ def format_dates(task):
         "Lifting_date": task.Lifting_date.strftime('%Y-%m-%d') if task.Lifting_date else None,
         "Payment_Date": task.Payment_Date.strftime('%Y-%m-%d') if task.Payment_Date else None,
         "Display_End_Date": task.Display_End_Date.strftime('%Y-%m-%d %H:%M:%S') if task.Display_End_Date else None
-
     }
 
 @app.route(API_URL + "/getAllDatapublishlist", methods=['GET'])
@@ -79,7 +78,6 @@ def publishlist_tender():
                     itemcode=row_data.get('itemcode'),
                     Lifting_date=row_data.get('Lifting_date'),
                     Payment_Date=row_data.get('Payment_Date'),
-                    Display_End_Date=row_data.get('Display_End_Date'),
                     Mill_Rate=row_data.get('Mill_Rate'),
                     Purchase_Rate=row_data.get('Purchase_Rate'),
                     Display_Qty=row_data.get('Display_Qty'),
@@ -94,6 +92,10 @@ def publishlist_tender():
                     Pt_Accoid = row_data.get('Pt_Accoid'),
                     mc = row_data.get('mc'),
                     ic = row_data.get('ic'),
+                    Start_Date=row_data.get('Start_Date'),
+                    Start_Time=row_data.get('Start_Time'),
+                    End_Date=row_data.get('End_Date'),
+                    End_Time=row_data.get('End_Time'),
                     Flag="Active"
                 )
                 new_tenders.append(new_tender)
@@ -130,7 +132,6 @@ def update_publish_tender():
         for key, value in data.items():
             if key == 'Display_End_Date' and value:
                 try:
-                    # Handle the 'YYYY-MM-DD HH:mm' format and convert to 'YYYY-MM-DD HH:mm:ss'
                     value = datetime.strptime(value, '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M:%S')
                 except ValueError:
                     return jsonify({'error': 'Invalid Display_End_Date format'}), 400
@@ -210,22 +211,24 @@ def getAllPublishDataList():
         with db.session.begin_nested():
             query = '''
 SELECT        dbo.eBuySugar_PublishList.Tender_No, dbo.eBuySugar_PublishList.Date, dbo.eBuySugar_PublishList.Mill_Code, dbo.eBuySugar_PublishList.Grade, dbo.eBuySugar_PublishList.season AS Season, 
-                         paymentto.Ac_Name_E AS DO_Name, dbo.eBuySugar_PublishList.itemcode, dbo.eBuySugar_PublishList.Lifting_date, dbo.eBuySugar_PublishList.Payment_Date, dbo.eBuySugar_PublishList.Display_End_Date, 
+                         paymentto.Ac_Name_E AS DO_Name, dbo.eBuySugar_PublishList.itemcode, dbo.eBuySugar_PublishList.Lifting_date, dbo.eBuySugar_PublishList.Payment_Date,
                          dbo.eBuySugar_PublishList.Mill_Rate, dbo.eBuySugar_PublishList.Purchase_Rate, dbo.eBuySugar_PublishList.Display_Qty, dbo.eBuySugar_PublishList.tenderid, dbo.eBuySugar_PublishList.publishid, 
                          dbo.eBuySugar_PublishList.user_id, dbo.eBuySugar_PublishList.Payment_ToAcCode, dbo.eBuySugar_PublishList.Pt_Accoid, dbo.eBuySugar_PublishList.mc, ISNULL(SUM(dbo.eBuySugar_OrderList.Buy_Qty), 0) AS sold, 
                          dbo.eBuySugar_PublishList.Display_Qty - ISNULL(SUM(dbo.eBuySugar_OrderList.Buy_Qty), 0) AS balance, dbo.eBuySugar_PublishList.Display_Rate, dbo.eBuySugar_PublishList.Flag, dbo.eBuySugar_PublishList.Item_Name, 
-                         mill.Short_Name, mill.Ac_Name_E AS Mill_Name, dbo.eBuySugar_PublishList.ic
+                         mill.Short_Name, mill.Ac_Name_E AS Mill_Name, dbo.eBuySugar_PublishList.ic, dbo.eBuySugar_PublishList.Start_Date, dbo.eBuySugar_PublishList.Start_Time, dbo.eBuySugar_PublishList.End_Date, 
+                         dbo.eBuySugar_PublishList.End_Time
 FROM            dbo.qryItemMaster INNER JOIN
                          dbo.eBuySugar_PublishList INNER JOIN
                          dbo.nt_1_accountmaster AS mill ON dbo.eBuySugar_PublishList.mc = mill.accoid INNER JOIN
                          dbo.nt_1_accountmaster AS paymentto ON dbo.eBuySugar_PublishList.Pt_Accoid = paymentto.accoid ON dbo.qryItemMaster.System_Code = dbo.eBuySugar_PublishList.itemcode LEFT OUTER JOIN
                          dbo.eBuySugar_OrderList ON dbo.eBuySugar_PublishList.publishid = dbo.eBuySugar_OrderList.publishid
 GROUP BY dbo.eBuySugar_PublishList.Tender_No, dbo.eBuySugar_PublishList.Date, dbo.eBuySugar_PublishList.Mill_Code, dbo.eBuySugar_PublishList.Grade, dbo.eBuySugar_PublishList.season, paymentto.Ac_Name_E, 
-                         dbo.eBuySugar_PublishList.itemcode, dbo.eBuySugar_PublishList.Lifting_date, dbo.eBuySugar_PublishList.Payment_Date, dbo.eBuySugar_PublishList.Display_End_Date, dbo.eBuySugar_PublishList.Mill_Rate, 
+                         dbo.eBuySugar_PublishList.itemcode, dbo.eBuySugar_PublishList.Lifting_date, dbo.eBuySugar_PublishList.Payment_Date, dbo.eBuySugar_PublishList.Mill_Rate, 
                          dbo.eBuySugar_PublishList.Purchase_Rate, dbo.eBuySugar_PublishList.Display_Qty, dbo.eBuySugar_PublishList.tenderid, dbo.eBuySugar_PublishList.publishid, dbo.eBuySugar_PublishList.user_id, 
                          dbo.eBuySugar_PublishList.Payment_ToAcCode, dbo.eBuySugar_PublishList.Pt_Accoid, dbo.eBuySugar_PublishList.mc, dbo.eBuySugar_PublishList.Display_Rate, dbo.eBuySugar_PublishList.Flag, 
-                         dbo.eBuySugar_PublishList.Item_Name, mill.Short_Name, mill.Ac_Name_E, dbo.eBuySugar_PublishList.ic
-HAVING        (dbo.eBuySugar_PublishList.Display_Qty - ISNULL(SUM(dbo.eBuySugar_OrderList.Buy_Qty), 0) <> 0)
+                         dbo.eBuySugar_PublishList.Item_Name, mill.Short_Name, mill.Ac_Name_E, dbo.eBuySugar_PublishList.ic, dbo.eBuySugar_PublishList.Start_Date, dbo.eBuySugar_PublishList.Start_Time, 
+                         dbo.eBuySugar_PublishList.End_Date, dbo.eBuySugar_PublishList.End_Time
+HAVING        (dbo.eBuySugar_PublishList.Display_Qty - ISNULL(SUM(dbo.eBuySugar_OrderList.Buy_Qty), 0) > 0)
             '''
             result = db.session.execute(text(query)).fetchall()
 
@@ -243,7 +246,6 @@ HAVING        (dbo.eBuySugar_PublishList.Display_Qty - ISNULL(SUM(dbo.eBuySugar_
                 'itemcode': row.itemcode,
                 'Lifting_date': row.Lifting_date.isoformat() if row.Lifting_date else None,
                 'Payment_Date': row.Payment_Date.isoformat() if row.Payment_Date else None,
-                'Display_End_Date': row.Display_End_Date.isoformat() if row.Display_End_Date else None,
                 'Mill_Rate': float(row.Mill_Rate) if row.Mill_Rate is not None else None,
                 'Purchase_Rate': float(row.Purchase_Rate) if row.Purchase_Rate is not None else None,
                 'Display_Rate': float(row.Display_Rate) if row.Display_Rate is not None else None,
@@ -258,6 +260,10 @@ HAVING        (dbo.eBuySugar_PublishList.Display_Qty - ISNULL(SUM(dbo.eBuySugar_
                 'balance': float(row.balance) if row.balance is not None else None,
                 'Flag': row.Flag,
                 'Item_Name': row.Item_Name,
+                'Start_Date': row.Start_Date.isoformat() if row.Start_Date else None,
+                'Start_Time': row.Start_Time.strftime('%H:%M:%S') if row.Start_Time else None, 
+                'End_Date': row.End_Date.isoformat() if row.End_Date else None,
+                'End_Time': row.End_Time.strftime('%H:%M:%S') if row.End_Time else None, 
                 'ic':row.ic
             }
             response.append(formatted_row)

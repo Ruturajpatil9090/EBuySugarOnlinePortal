@@ -93,7 +93,7 @@ const UserProfile: React.FC = () => {
       case 3:
         return paymentSchema;
       case 4:
-          return paymentSchema;
+        return paymentSchema;
       default:
         throw new Error('Unknown step');
     }
@@ -134,9 +134,9 @@ const UserProfile: React.FC = () => {
   const onSubmit = (data: FormData) => {
     if (activeStep === steps.length - 1) {
       setFormData((prevData) => ({ ...prevData, ...data }));
-      console.log('Form submitted with all steps data:', { ...formData, ...data });
+     
     }
-  
+
   };
 
   const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -365,7 +365,7 @@ const UserProfile: React.FC = () => {
                 )}
                 {activeStep === 1 && (
                   <>
-                   
+
                   </>
                 )}
                 {activeStep === 2 && (
@@ -473,13 +473,13 @@ const UserProfile: React.FC = () => {
 
                   </>
                 )}
-                  {activeStep === 4 && (
+                {activeStep === 4 && (
                   <>
-                   
+
                   </>
                 )}
 
-             
+
                 <Box mt={2}>
                   <Button
                     disabled={activeStep === 0}

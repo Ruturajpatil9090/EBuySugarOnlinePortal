@@ -9,6 +9,8 @@ const apiKey = process.env.REACT_APP_API_KEY;
 interface SystemHelpMasterProps {
     onAcCodeClick?: (code: number, name: string, id: number,axRate : string,  minRate:string) => void;
     name: string;
+    CategoryName:string;
+    CategoryCode:number;
 }
 
 interface SystemData {
@@ -19,7 +21,7 @@ interface SystemData {
     minRate:string;
 }
 
-const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name }) => {
+const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name,CategoryName,CategoryCode }) => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [popupContent, setPopupContent] = useState<SystemData[]>([]);
     const [enteredCode, setEnteredCode] = useState<string>("");
@@ -31,7 +33,7 @@ const SystemHelpMaster: React.FC<SystemHelpMasterProps> = ({ onAcCodeClick, name
     const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1);
     const [apiDataFetched, setApiDataFetched] = useState<boolean>(false);
     const [minRate, setMinRate] = useState<string>("");
-const [maxRate, setMaxRate] = useState<string>("");
+    const [maxRate, setMaxRate] = useState<string>("");
 
 
     const fetchData = useCallback(async () => {
@@ -165,7 +167,7 @@ const [maxRate, setMaxRate] = useState<string>("");
                         className="form-control ms-2"
                         id={name}
                         autoComplete="off"
-                        value={enteredCode}
+                        value={enteredCode !== '' ? enteredCode : CategoryCode}
                         onChange={handleCodeChange}
                         style={{ width: "200px", height: "45px" }}
                         placeholder="Slect Item"
@@ -179,7 +181,7 @@ const [maxRate, setMaxRate] = useState<string>("");
                         ...
                     </Button>
                     <label id="nameLabel" className="form-labels ms-2">
-                        {enteredName}
+                    {enteredName || CategoryName}
                     </label>
                 </div>
             </div>

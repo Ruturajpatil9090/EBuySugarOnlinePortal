@@ -72,8 +72,6 @@ const SaleBillReport = ({sbNo}) => {
     }
   };
 
-  console.log("Invoice Data", invoiceData)
-
   const generatePdf = (data) => {
     const pdf = new jsPDF({ orientation: "portrait" });
 
